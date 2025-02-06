@@ -16,7 +16,7 @@ class _LibraryItem:
         ## and change their status in the .csv
 
 class Book(_LibraryItem):
-    def __init__(self, title, publisher, author, ISBN):
+    def __init__(self, title, publisher, author, ISBN=0):
         super().__init__(title, publisher)
         self.author=author
         self.ISBN=ISBN
