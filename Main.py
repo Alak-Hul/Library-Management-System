@@ -1,4 +1,6 @@
 from Books import Book, Magazine
+from Account import Account
+from Library import Library
 
 book1 = Book("The Witcher: Last Wish", "Angry Polish Guy","0-061-96436-0")
 magazine1
