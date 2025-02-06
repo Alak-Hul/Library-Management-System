@@ -18,15 +18,20 @@ class _LibraryItem:
 class Book(_LibraryItem):
     def __init__(self, title, publisher, author, ISBN):
         super().__init__(title, publisher)
-        self.author=author
-        self.ISBN=ISBN
+        self.author = author
+        self.ISBN = ISBN
 
 class Magazine(_LibraryItem):
-    def __init__(self, title, publisher, issue_num):
+    def __init__(self, title, publisher, issue_num=int):
         super().__init__(title, publisher)
-        self.issue_num=issue_num
+        self.issue_num = issue_num
 
 class Account:
-    def __init__(self, first_name, last_name,):
-        self.__first_name=first_name
-        self.__last_name=last_name
+    def __init__(self, first_name, last_name):
+        self.first_name = first_name
+        self.last_name = last_name
+        # entry = 
+        # self.accountId = entry + 1
+        # 
+        ## entry will read from a text file which contains all account ids of other accounts and 
+        ## gather the latest entry and adds 1, then appends the id to the entries text file
