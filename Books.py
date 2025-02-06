@@ -1,7 +1,7 @@
-class Book:
-    def __init__(self, title, author):
+class _LibraryItem:
+    def __init__(self, title, publisher):
         self.title = title
-        self.author = author
+        self.publisher = publisher
         self.__checked_in = False
 
     def is_status(self):
@@ -14,3 +14,19 @@ class Book:
     def check_in(self):
         self.__checked_in = False
         ## and change their status in the .csv
+
+class Book(_LibraryItem):
+    def __init__(self, title, publisher, author, ISBN):
+        super().__init__(title, publisher)
+        self.author=author
+        self.ISBN=ISBN
+
+class Magazine(_LibraryItem):
+    def __init__(self, title, publisher, issue_num):
+        super().__init__(title, publisher)
+        self.issue_num=issue_num
+
+class Account:
+    def __init__(self, first_name, last_name,):
+        self.__first_name=first_name
+        self.__last_name=last_name
