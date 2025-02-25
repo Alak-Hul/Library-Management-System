@@ -13,7 +13,7 @@ class Database:
         try:
             #BOOKS & LIBRARIES
             with open(books_file, newline='') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter=",", quotechar="|")
+                reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
 
                 for book_in_csv in reader:
                     lib = book_in_csv.popitem()[1]
@@ -31,15 +31,22 @@ class Database:
         except OSError:
             print("ERROR: INVAILD BOOK FILE NAME")
 
-           
-        self.books = list(books_grouped_by_library.values())[0]
+        
+        self.books = sum(books_grouped_by_library.values(),[])
         self.libraries = libraries
         try:
             #ACCOUNTS
             with open(accounts_file, newline='') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter=",", quotechar="|")
+                reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
                 
                 for account_in_csv in reader:
+                    if account_in_csv["books"] != "None":
+                        ISBNs = account_in_csv["books"].split(",")
+                        account_in_csv["books"] = []
+                        for ISBN in ISBNs:
+                            for book in self.books:
+                                if book == ISBN:
+                                    account_in_csv["books"].append(book)
                     accounts.append(Account(**account_in_csv))
         except OSError:
             print("ERROR: INVAILD ACCOUNT FILE NAME")

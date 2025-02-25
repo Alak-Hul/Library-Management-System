@@ -35,6 +35,9 @@ class Book(_LibraryItem):
 
     def due_date(self):
         return "need to finish this"
+    
+    def __eq__(self, isbn):
+        return self.ISBN == isbn
 
 class Magazine(_LibraryItem):
     def __init__(self, title, publisher, status , issue_num=int):
