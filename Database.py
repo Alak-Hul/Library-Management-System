@@ -5,6 +5,8 @@ from Account import Account
 
 class Database:
     def __init__(self, books_file, accounts_file):
+        self.books_file = books_file
+        self.accounts_file = accounts_file
         books_grouped_by_library = {}
         libraries = []
         accounts = []
@@ -26,14 +28,12 @@ class Database:
                 for key, value in books_grouped_by_library.items():
                     libraries.append(Library(key, value))
 
-           
-
         except OSError:
             print("ERROR: INVAILD BOOK FILE NAME")
 
-        
-        self.books = sum(books_grouped_by_library.values(),[])
+        self.books = sum(books_grouped_by_library.values(),[]) # Ungroups the books
         self.libraries = libraries
+
         try:
             #ACCOUNTS
             with open(accounts_file, newline='') as csvfile:
@@ -55,7 +55,33 @@ class Database:
         self.accounts = accounts
 
 
-    def __str__(self):
+    def save(self):
+        books_file = self.books_file
+        accounts_file = self.accounts_file
+
+        #Books & Libraries
+        with open(books_file, mode='w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["ISBN","title","author","publisher","status","library"])
+            for lib in self.libraries:
+                for book in lib.books:
+                    writer.writerow([book.ISBN,book.title,book.author,book.publisher,book.is_status(),lib.location])
+        
+
+        # Accounts
+        with open(accounts_file, mode="w", newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["ID","first_name","last_name","books"])
+            for account in self.accounts:
+                if account.books != None:
+                    books_str = ''
+                    for book in account.books:
+                        books_str += f"{book.ISBN},"
+                    books_str += ''
+                writer.writerow([account.ID, account.first_name, account.last_name, books_str])
+
+
+    def __repr__(self):
         str = "BOOKS:\n"
         for book in self.books:
             str += f"    {book} \n"

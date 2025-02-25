@@ -24,7 +24,7 @@ class _LibraryItem:
     def __repr__(self):
         attrs = ""
         for key, value in self.__dict__.items():
-            attrs += f'{key}: {value}' + ", "
+            attrs += f'{key}: {value}' + ","
         return attrs
 
 class Book(_LibraryItem):

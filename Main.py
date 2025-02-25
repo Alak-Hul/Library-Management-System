@@ -7,6 +7,7 @@ from Database import Database
 
 db = Database('books.csv', 'account.csv')
 print(db)
+db.save()
 
 # Quick Tkinter Test
 root = Tk()
