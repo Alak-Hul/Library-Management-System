@@ -6,7 +6,7 @@ from Database import Database
 
 
 db = Database('books.csv')
-print(Databasew)
+print(db)
 
 # Quick Tkinter Test
 root = Tk()
