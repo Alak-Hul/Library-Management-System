@@ -1,20 +1,17 @@
 
 class Library:
     def __init__(self, location="Unknown", books=["testing", "testing2", "testing3"]):
-        self.location = location #North, South, East, West
+        self.location = location #North, South
         self.books = books
 
 
     def __str__(self):
-        str = f"Location: {self.location} \n\nBooks: \n"
+        str = f"Location: {self.location} \n    Books: \n"
         
         booksStr = ""
         for book in self.books:
-            booksStr = booksStr + f' {book} \n'
+            booksStr = booksStr + f'        {book} \n'
 
-        return str +  booksStr
+        return str +  booksStr + '\n'
 
 lib = Library()
-
-print(lib)
-# this is just temp, I won't know how to make this until I see how the books are set up

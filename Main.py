@@ -5,7 +5,7 @@ from tkinter import ttk
 from Database import Database
 
 
-db = Database('books.csv')
+db = Database('books.csv', 'account.csv')
 print(db)
 
 # Quick Tkinter Test
