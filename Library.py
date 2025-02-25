@@ -4,6 +4,7 @@ class Library:
         self.location = location #North, South, East, West
         self.books = books
 
+
     def __str__(self):
         str = f"Location: {self.location} \n\nBooks: \n"
         
@@ -12,7 +13,6 @@ class Library:
             booksStr = booksStr + f' {book} \n'
 
         return str +  booksStr
-
 
 lib = Library()
 
