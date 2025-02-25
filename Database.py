@@ -24,5 +24,3 @@ class Database:
 
         self.books = list(books_grouped_by_library.values())[0]
         self.libraries = libraries
-db = Database("books.csv")
-print(db)
