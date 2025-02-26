@@ -29,9 +29,9 @@ class _LibraryItem:
 
 class Book(_LibraryItem):
     def __init__(self, title, publisher, author, status, ISBN=0):
-        super().__init__(title, status, publisher)
+        super().__init__(title, publisher, status)
         self.author = author
-        self.ISBN = ISBN
+        self.ISBN = int(ISBN)
 
     def due_date(self):
         return "need to finish this"
@@ -41,7 +41,7 @@ class Book(_LibraryItem):
 
 class Magazine(_LibraryItem):
     def __init__(self, title, publisher, status , issue_num=int):
-        super().__init__(title, status, publisher)
+        super().__init__(title, publisher, status)
         self.issue_num = issue_num
 
     def due_date(self):

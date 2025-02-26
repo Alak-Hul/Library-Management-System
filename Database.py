@@ -29,7 +29,7 @@ class Database:
                     libraries.append(Library(key, value))
 
         except OSError:
-            print("ERROR: INVAILD BOOK FILE NAME")
+            print("ERROR: INVALID BOOK FILE NAME")
 
         self.books = sum(books_grouped_by_library.values(),[]) # Ungroups the books
         self.libraries = libraries
@@ -49,7 +49,7 @@ class Database:
                                     account_in_csv["books"].append(book)
                     accounts.append(Account(**account_in_csv))
         except OSError:
-            print("ERROR: INVAILD ACCOUNT FILE NAME")
+            print("ERROR: INVALID ACCOUNT FILE NAME")
 
 
         self.accounts = accounts
@@ -93,5 +93,4 @@ class Database:
             str += f"    {acc}"
         return str
     
-
-
+    
