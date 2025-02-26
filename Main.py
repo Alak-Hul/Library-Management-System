@@ -8,7 +8,7 @@ from Database import Database
 
 db = Database('books.csv', 'account.csv')
 print(db)
-db.save()
+db.save()# Just a testcase ideally we would save when to program closes
 
 class LibraryGUI:
     def __init__(self,root):

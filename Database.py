@@ -78,7 +78,7 @@ class Database:
                     for book in account.books:
                         books_str += f"{book.ISBN},"
                     books_str += ''
-                writer.writerow([account.ID, account.first_name, account.last_name, books_str])
+                writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), books_str])
 
 
     def __repr__(self):
