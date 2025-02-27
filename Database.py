@@ -93,4 +93,3 @@ class Database:
             str += f"    {acc}"
         return str
     
-    
