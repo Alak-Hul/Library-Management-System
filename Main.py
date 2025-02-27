@@ -1,23 +1,30 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-
+import os
 
 from Database import Database
+import os
 
+here = os.path.dirname(os.path.abspath(__file__))
 
-db = Database('books.csv', 'account.csv')
-#print(db)
+books_csv = os.path.join(here, 'books.csv')
+
+accounts_csv = os.path.join(here, 'accounts.csv')
+
+db = Database(books_csv, accounts_csv)
+print(db)
 #db.save()# Just a testcase ideally we would save when to program closes
 
-print("SEARCH TEST CASES")
+"""
+#print("SEARCH TEST CASES")
 #db.books_search(keyword, field)
 searched_list = db.books_search("the", "title")
 print(f"\nTitle Searched \"the\":\n{'\n'.join([x.title for x in searched_list])}")
 
 searched_list = db.books_search("boo", "publisher")
 print(f"\nPublisher Searched \"boo\":\n{'\n'.join([x.title + f" publisher is {x.publisher}"for x in searched_list])}")
-
+"""
 
 
 class LibraryGUI:
