@@ -7,10 +7,10 @@ class Account:
         self.books = books
 
     def get_first_name(self):
-        self.__first_name
+        return self.__first_name
     
     def get_last_name(self):
-        self.__last_name
+        return self.__last_name
 
     def __repr__(self):
         attrs = ""

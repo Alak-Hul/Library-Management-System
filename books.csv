@@ -1,9 +1,9 @@
 ISBN,title,author,publisher,status,library
-0000-0000-00001,The Last Wish,Angry Polish Guy,true,Hachette Book Group,north
-0000-0000-00003,Sword Of Destiny,Angry Polish Guy,true,Hachette Book Group,north
-0000-0000-00005,Time Of Contempt,Angry Polish Guy,true,Hachette Book Group,north
-0000-0000-00006,Baptism Of Fire,Angry Polish Guy,true,Hachette Book Group,north
-0000-0000-00002,The Last Wish,Angry Polish Guy,true,Hachette Book Group,south
-0000-0000-00004,Blood Of Elves,Angry Polish Guy,true,Hachette Book Group,south
-0000-0000-00007,The Tower Of Swallows,Angry Polish Guy,true,Hachette Book Group,south
-0000-0000-00008,Lady Of The Lake,Angry Polish Guy,true,Hachette Book Group,south
+0000-0000-00001,The Last Wish,Angry Polish Guy,Hachette Book Group,true,north
+0000-0000-00003,Sword Of Destiny,Angry Polish Guy,Hachette Book Group,true,north
+0000-0000-00005,Time Of Contempt,Angry Polish Guy,Hachette Book Group,true,north
+0000-0000-00006,Baptism Of Fire,Angry Polish Guy,Hachette Book Group,true,north
+0000-0000-00002,The Last Wish,Angry Polish Guy,Hachette Book Group,true,south
+0000-0000-00004,Blood Of Elves,Angry Polish Guy,Hachette Book Group,true,south
+0000-0000-00007,The Tower Of Swallows,Angry Polish Guy,Hachette Book Group,true,south
+0000-0000-00008,Lady Of The Lake,Angry Polish Guy,Hachette Book Group,true,south

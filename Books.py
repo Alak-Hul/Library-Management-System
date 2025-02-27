@@ -31,7 +31,7 @@ class Book(_LibraryItem):
     def __init__(self, title, publisher, author, status, ISBN=0):
         super().__init__(title, publisher, status)
         self.author = author
-        self.ISBN = int(ISBN)
+        self.ISBN = ISBN
 
     def due_date(self):
         return "need to finish this"
