@@ -7,8 +7,18 @@ from Database import Database
 
 
 db = Database('books.csv', 'account.csv')
-print(db)
-db.save()# Just a testcase ideally we would save when to program closes
+#print(db)
+#db.save()# Just a testcase ideally we would save when to program closes
+
+print("SEARCH TEST CASES")
+#db.books_search(keyword, field)
+searched_list = db.books_search("the", "title")
+print(f"\nTitle Searched \"the\":\n{'\n'.join([x.title for x in searched_list])}")
+
+searched_list = db.books_search("boo", "publisher")
+print(f"\nPublisher Searched \"boo\":\n{'\n'.join([x.title + f" publisher is {x.publisher}"for x in searched_list])}")
+
+
 
 class LibraryGUI:
     def __init__(self,root):

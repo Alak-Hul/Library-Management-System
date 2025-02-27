@@ -80,6 +80,12 @@ class Database:
                     books_str += ''
                 writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), books_str])
 
+    def books_search(self, keyword, attr):
+        list = [] # just makes a list so append() can be used
+        for book in self.books: # Iterates though all books in the database
+            if keyword.lower() in getattr(book, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
+                list.append(book) # adds the book that matchs the keyword to the list 
+        return list # Returns a list of books that match the search criteria.
 
     def __repr__(self):
         str = "BOOKS:\n"
