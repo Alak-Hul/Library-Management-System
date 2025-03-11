@@ -58,36 +58,40 @@ class LibraryGUI:
         ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=2,column=0,columnspan=2,pady=5) # Guest access
 
     def login(self):
-        login_id=self.login_id_entry.get().strip
-        if not login_id:
+        login_id=self.login_id_entry.get().strip()
+        if login_id:
+            matching_login=None
+            for account in db.accounts:
+                if str(account.ID)==login_id:
+                    matching_login=account
+                    break
+            
+            if matching_login:
+                self.current_user=matching_login
+                # Notify that the login was successful
+                print(f"login success {matching_login.get_first_name()} {matching_login.get_last_name()}")
+                self.login_frame.pack_forget()
+                self.my_account_section()
+                self.main_frame.pack(expand=True,fill="both")
+            else:
+                # Show error that id isnt found
+                print("error id not found")
+                pass
+        else:
             # Show error
             print("error")
-            return
-        
-        matching_login=None
-        for account in db.accounts:
-            print(account.ID,login_id)
-            if str(account.ID)==login_id:
-                matching_login=account
-                break
-        
-        if matching_login:
-            self.current_user=matching_login
-            # notify that the login was successful
-            print(f"login success {matching_login.get_first_name()} {matching_login.get_last_name()}")
-            self.login_frame.pack_forget()
-            self.my_account_section
-            self.main_frame.pack(expand=True,fill="both")
-        else:
-            # show error that id isnt found
-            print("error id not found")
-            pass
 
     def guest_login(self):
         self.current_user=None
         self.login_frame.pack_forget()
         self.main_frame.pack(expand=True,fill="both")
         self.my_account_section()
+
+    def logout(self):
+        self.current_user=None
+        self.main_frame.pack_forget()
+        self.login_id_entry.delete(0,END)
+        self.login_frame.pack(expand=True,fill="both")
 
     def items_section(self):
         # Items tab creation
@@ -179,18 +183,41 @@ class LibraryGUI:
         self.magazine_search_tree.heading("Library",text="Library")
         self.magazine_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
 
-    def my_account_section(self): # Needs total rehaul. Replacing account section with 'My Account' which displays information regarding the user's account and checked out items
-        ttk.Label(self.my_account_frame,text="Search Account",font=("Arial",16)).pack()
+    def my_account_section(self):
+        for i in self.my_account_frame.winfo_children():
+            i.destroy()
+        
+        if self.current_user:
+            ttk.Label(self.my_account_frame, text=f"{self.current_user.get_first_name()} {self.current_user.get_last_name()}",font=("Arial", 16)).pack(pady=10)
+            ttk.Label(self.my_account_frame, text=f"Account ID: {self.current_user.ID}").pack()
 
-        # Search for Accounts
-        search_frame=ttk.Frame(self.my_account_frame)
-        search_frame.pack(pady=10)
-        self.account_search_entry=ttk.Entry(search_frame)
-        self.account_search_entry.pack(side="left",padx=5)
-        ttk.Button(search_frame,text="Search",command=self.search_account).pack(side="left")
+            ttk.Button(self.my_account_frame, text="Logout", command=self.logout).pack(pady=10)
 
-        self.accounts_list=tk.Listbox(self.my_account_frame)
-        self.accounts_list.pack(fill="both",expand=True)
+            ttk.Label(self.my_account_frame, text="My Checked Out Items", font=("Arial", 14)).pack(pady=10)
+
+            self.my_checked_out_books_tree=ttk.Treeview(self.my_account_frame,columns=("Title","Type","Due Date","Status"),show="headings")
+            self.my_checked_out_books_tree.heading("Title", text="Title")
+            self.my_checked_out_books_tree.heading("Type", text="Type")
+            self.my_checked_out_books_tree.heading("Due Date", text="Due Date")
+            self.my_checked_out_books_tree.heading("Status", text="Status")
+            self.my_checked_out_books_tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+            # ttk.Button(self.my_account_frame,text="Return Selected Item",command=self.return_selected_item).pack(pady=10)
+            # Need to add function that returns the selected item (return_selected_item())
+
+            self.refresh_my_checked_out_books() # Puts the user's checked out books in list
+        else:
+            ttk.Label(self.my_account_frame,text="Guest Mode",font=("Arial",16)).pack(pady=20)
+            ttk.Label(self.my_account_frame,text="Please sign in to access your account").pack()
+            ttk.Button(self.my_account_frame,text="Sign In",command=self.logout).pack(pady=20)
+
+    def refresh_my_checked_out_books(self):
+        if self.current_user and hasattr(self,"my_books_tree"):
+            for item in self.my_checked_out_books_tree.get_children():
+                self.my_checked_out_books_tree.delete(item)
+                
+            if not self.current_user.books:
+                return
 
     def libraries_section(self):
         ttk.Label(self.library_frame,text="Libraries", font=("Arial",16)).pack()
