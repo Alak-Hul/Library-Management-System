@@ -20,20 +20,74 @@ class LibraryGUI:
         self.root=root
         self.root.title("Library Management System")
         self.root.geometry("960x540")
-        self.notebook=ttk.Notebook(root)
+
+        self.current_user=None # Initialize the current user
+
+        self.main_frame=ttk.Frame(root)
+        
+        self.notebook=ttk.Notebook(self.main_frame)
         self.notebook.pack(expand=True,fill="both")
+        
+        self.login_frame=ttk.Frame(root) # Login frame
+        self.login_frame.pack(expand=True, fill="both")
 
         self.items_frame=ttk.Frame(self.notebook)
-        self.accounts_frame=ttk.Frame(self.notebook)
+        self.my_account_frame=ttk.Frame(self.notebook)
         self.library_frame=ttk.Frame(self.notebook)
 
         self.notebook.add(self.items_frame,text="Items")
-        self.notebook.add(self.accounts_frame,text="Accounts")
+        self.notebook.add(self.my_account_frame,text="My Account")
         self.notebook.add(self.library_frame,text="Libraries")
 
         self.items_section()
-        self.accounts_section()
         self.libraries_section()
+        
+        self.login_screen()
+
+    def login_screen(self):
+        ttk.Label(self.login_frame,text="Library Management System Login",font=("Arial", 16)).pack(pady=20)
+        login_form=ttk.Frame(self.login_frame)
+        login_form.pack(pady=20)
+
+        ttk.Label(login_form,text="User ID:").grid(row=0,column=0,padx=5,pady=5,sticky="e")
+        self.login_id_entry=ttk.Entry(login_form,width=30)
+        self.login_id_entry.grid(row=0,column=1,padx=5,pady=5)
+
+        ttk.Button(login_form,text="Sign In",command=self.login).grid(row=1,column=0,columnspan=2,pady=10) # Normal user access
+        
+        ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=2,column=0,columnspan=2,pady=5) # Guest access
+
+    def login(self):
+        login_id=self.login_id_entry.get().strip
+        if not login_id:
+            # Show error
+            print("error")
+            return
+        
+        matching_login=None
+        for account in db.accounts:
+            print(account.ID,login_id)
+            if str(account.ID)==login_id:
+                matching_login=account
+                break
+        
+        if matching_login:
+            self.current_user=matching_login
+            # notify that the login was successful
+            print(f"login success {matching_login.get_first_name()} {matching_login.get_last_name()}")
+            self.login_frame.pack_forget()
+            self.my_account_section
+            self.main_frame.pack(expand=True,fill="both")
+        else:
+            # show error that id isnt found
+            print("error id not found")
+            pass
+
+    def guest_login(self):
+        self.current_user=None
+        self.login_frame.pack_forget()
+        self.main_frame.pack(expand=True,fill="both")
+        self.my_account_section()
 
     def items_section(self):
         # Items tab creation
@@ -125,17 +179,17 @@ class LibraryGUI:
         self.magazine_search_tree.heading("Library",text="Library")
         self.magazine_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
 
-    def accounts_section(self):
-        ttk.Label(self.accounts_frame,text="Search Account",font=("Arial",16)).pack()
+    def my_account_section(self): # Needs total rehaul. Replacing account section with 'My Account' which displays information regarding the user's account and checked out items
+        ttk.Label(self.my_account_frame,text="Search Account",font=("Arial",16)).pack()
 
         # Search for Accounts
-        search_frame=ttk.Frame(self.accounts_frame)
+        search_frame=ttk.Frame(self.my_account_frame)
         search_frame.pack(pady=10)
         self.account_search_entry=ttk.Entry(search_frame)
         self.account_search_entry.pack(side="left",padx=5)
         ttk.Button(search_frame,text="Search",command=self.search_account).pack(side="left")
 
-        self.accounts_list=tk.Listbox(self.accounts_frame)
+        self.accounts_list=tk.Listbox(self.my_account_frame)
         self.accounts_list.pack(fill="both",expand=True)
 
     def libraries_section(self):
