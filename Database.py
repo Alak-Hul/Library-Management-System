@@ -73,12 +73,13 @@ class Database:
             writer = csv.writer(csvfile)
             writer.writerow(["ID","first_name","last_name","books"])
             for account in self.accounts:
+                books_str = None
                 if account.books != None:
                     books_str = ''
                     for book in account.books:
                         books_str += f"{book.ISBN},"
-                    books_str += ''
-                writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), books_str])
+                    books_str += ''       
+                writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), str(books_str)])
 
     def books_search(self, keyword, attr):
         list = [] # just makes a list so append() can be used
@@ -86,6 +87,12 @@ class Database:
             if keyword.lower() in getattr(book, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
                 list.append(book) # adds the book that matchs the keyword to the list 
         return list # Returns a list of books that match the search criteria.
+
+    def create_account(self, name, id):
+        name = name.split(" ")
+        self.accounts.append(Account(name[0], name[1], id))
+        print(self.accounts[-1])
+        self.save()
 
     def __repr__(self):
         str = "BOOKS:\n"

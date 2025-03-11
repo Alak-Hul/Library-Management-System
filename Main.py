@@ -29,7 +29,9 @@ class LibraryGUI:
         self.notebook.pack(expand=True,fill="both")
         
         self.login_frame=ttk.Frame(root) # Login frame
-        self.login_frame.pack(expand=True, fill="both")
+
+        self.account_creation_frame=ttk.Frame(root)
+
 
         self.items_frame=ttk.Frame(self.notebook)
         self.my_account_frame=ttk.Frame(self.notebook)
@@ -41,10 +43,17 @@ class LibraryGUI:
 
         self.items_section()
         self.libraries_section()
-        
+
         self.login_screen()
 
     def login_screen(self):
+        if hasattr(self, 'login_frame'):  # for the back function of account_creation
+            self.login_frame.destroy()  # Destroy the old frame if it exists
+
+        self.login_frame = ttk.Frame(self.root)  # Recreate the frame
+        self.login_frame.pack(expand=True, fill="both")
+
+        self.login_frame.pack(expand=True, fill="both")
         ttk.Label(self.login_frame,text="Library Management System Login",font=("Arial", 16)).pack(pady=20)
         login_form=ttk.Frame(self.login_frame)
         login_form.pack(pady=20)
@@ -53,15 +62,14 @@ class LibraryGUI:
         self.login_id_entry=ttk.Entry(login_form,width=30)
         self.login_id_entry.grid(row=0,column=1,padx=5,pady=5)
 
-        ttk.Button(login_form,text="Sign In",command=self.login).grid(row=1,column=0,columnspan=2,pady=10) # Normal user access
+        ttk.Button(login_form,text="Sign In",command= lambda: self.login(self.login_id_entry.get().strip())).grid(row=1,column=0,columnspan=2,pady=10) # Normal user access
         
-        ttk.Button(login_form,text="Create Account",command=self.create_account).grid(row=2,column=0,columnspan=2,pady=5) # Create new account
+        ttk.Button(login_form,text="Create Account",command=self.account_creation).grid(row=2,column=0,columnspan=2,pady=5) # Create new account
         
         ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=3,column=0,columnspan=2,pady=5) # Guest access
 
 
-    def login(self):
-        login_id=self.login_id_entry.get().strip()
+    def login(self, login_id):
         if login_id:
             matching_login=None
             for account in db.accounts:
@@ -84,9 +92,38 @@ class LibraryGUI:
             # Show error
             print("error")
 
-    def create_account(self):
-        # Implement account creation function here
-        pass
+    def account_back(self): #honestly I hate this, but it works so who cares
+        self.account_creation_frame.pack_forget()
+        self.account_creation_frame.destroy()
+        self.account_creation_frame=ttk.Frame(root) 
+        self.login_screen()
+
+    def account_generate(self, name, id):
+        self.account_creation_frame.pack_forget()
+        db.create_account(name, id)
+        self.login(id)
+
+    def account_creation(self):
+        self.login_frame.pack_forget()
+        self.account_creation_frame.pack(expand=True, fill="both")
+        ttk.Label(self.account_creation_frame, text="Library Management System Account Creation",font=("Arial", 16)).pack(pady=20)
+        account_creation_form = ttk.Frame(self.account_creation_frame)
+        account_creation_form.pack(pady=20)
+
+        ttk.Label(account_creation_form,text="Full Name(First and Last):").grid(row=0,column=0,padx=5,pady=5,sticky="e")
+        account_full_name_entry = ttk.Entry(account_creation_form, width=30)
+        account_full_name_entry.grid(row=0,column=1,padx=5,pady=5)
+
+        ttk.Label(account_creation_form,text="Student ID:").grid(row=1,column=0,padx=5,pady=5,sticky="e")
+        account_ID_entry = ttk.Entry(account_creation_form, width=30)
+        account_ID_entry.grid(row=1,column=1,padx=5,pady=5)
+
+        ttk.Button(account_creation_form, text="Submit", command=lambda: self.account_generate(account_full_name_entry.get().strip(), account_ID_entry.get().strip())).grid(row=2,column=0,columnspan=2,pady=10)
+        ttk.Button(account_creation_form,text="Back",command=self.account_back).grid(row=3,column=0,columnspan=2,pady=10)
+
+    
+
+
 
     def guest_login(self):
         self.current_user=None
