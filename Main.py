@@ -55,7 +55,10 @@ class LibraryGUI:
 
         ttk.Button(login_form,text="Sign In",command=self.login).grid(row=1,column=0,columnspan=2,pady=10) # Normal user access
         
-        ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=2,column=0,columnspan=2,pady=5) # Guest access
+        ttk.Button(login_form,text="Create Account",command=self.create_account).grid(row=2,column=0,columnspan=2,pady=5) # Create new account
+        
+        ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=3,column=0,columnspan=2,pady=5) # Guest access
+
 
     def login(self):
         login_id=self.login_id_entry.get().strip()
@@ -80,6 +83,10 @@ class LibraryGUI:
         else:
             # Show error
             print("error")
+
+    def create_account(self):
+        # Implement account creation function here
+        pass
 
     def guest_login(self):
         self.current_user=None
