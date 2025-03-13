@@ -1,10 +1,10 @@
 
 class Account:
-    def __init__(self, first_name="None", last_name="None", ID=0, books=None, magazines=None):
-        self.__first_name=first_name
-        self.__last_name=last_name
-        self.ID = ID
-        self.books = books if books != "None" else None
+    def __init__(self, _first_name="None", _last_name="None", _ID=0, books=None, magazines=None): 
+        self._first_name=_first_name
+        self._last_name=_last_name
+        self._ID = _ID
+        self.books = books
         self.magazines = magazines
 
     def get_first_name(self):

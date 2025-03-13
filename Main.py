@@ -9,12 +9,10 @@ import os
 here = os.path.dirname(os.path.abspath(__file__))
 
 books_csv = os.path.join(here, 'books.csv')
-
 accounts_csv = os.path.join(here, 'accounts.csv')
 
 db = Database(books_csv, accounts_csv)
 print(db)
-
 class LibraryGUI:
     def __init__(self, root):
         self.root=root
@@ -87,7 +85,6 @@ class LibraryGUI:
             else:
                 # Show error that id isnt found
                 print("error id not found")
-                pass
         else:
             # Show error
             print("error")

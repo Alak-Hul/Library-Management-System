@@ -1,3 +1,2 @@
-ID,first_name,last_name,books
-100982527,Kurtis,Stubbe,"0000-0000-00001,0000-0000-00003,0000-0000-00004,"
-
+_first_name,_last_name,_ID,books,magazines
+Kurtis,Stubbe,100982527,"0000-0000-00001,0000-0000-00003,0000-0000-00004,",

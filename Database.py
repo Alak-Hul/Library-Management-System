@@ -11,7 +11,7 @@ class Database:
         libraries = []
         accounts = []
         
-        
+        #All the code below for books and accounts was made with the intention that it wouldn't be added too if books, magazines, or accounts had aditional attributes added in the future
         try:
             #BOOKS & LIBRARIES
             with open(books_file, newline='') as csvfile:
@@ -59,30 +59,72 @@ class Database:
         books_file = self.books_file
         accounts_file = self.accounts_file
 
+        backup = ""
+
+        with open(books_file, mode='r', newline='') as csvfile:
+            backup = csvfile.read()
+
+
         #Books & Libraries
-        with open(books_file, mode='w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["ISBN","title","author","publisher","status","library"])
-            for lib in self.libraries:
-                for book in lib.books:
-                    writer.writerow([book.ISBN,book.title,book.author,book.publisher,book.is_status(),lib.location])
-        
+        try:
+            with open(books_file, mode='w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                keys = list(self.books[0].__dict__.keys())
+                keys.append("Library")
+
+                writer.writerow(keys) # writes all book attribute names as well as "Library"
+
+                for lib in self.libraries:
+                    for book in lib.books:
+                        values = list(book.__dict__.values())
+                        values.append(lib.location)
+                        writer.writerow(values) # writes all book attribute values as well as its library location
+        except Exception as e:
+            #To stop all data getting deleted of a crash happens
+            with open(books_file, mode='w', newline="") as csvfile:
+                csvfile.write(backup)
+            
+            print("Error: Save File Reverted to Most recent data")
+            raise e
+            
+        with open(accounts_file, mode='r', newline='') as csvfile:
+            backup = csvfile.read()
+
+
 
         # Accounts
-        with open(accounts_file, mode="w", newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["ID","first_name","last_name","books"])
-            for account in self.accounts:
-                books_str = None
-                if account.books != None:
-                    books_str = ''
-                    for book in account.books:
-                        try:
-                            books_str += f"{book.ISBN},"
-                        except AttributeError:
-                            print("That didn't work")
-                    books_str += ''       
-                writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), str(books_str)])
+        try:
+            #this way made so that more attributes can be added to book and magazine and no addtional code would need to be added here
+            with open(accounts_file, mode="w", newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                keys = list(self.accounts[0].__dict__.keys())
+                writer.writerow(keys) # writes all book attribute names
+
+                for account in self.accounts:
+                    books_str = None
+                    if account.books != None:
+                        books_str = ''
+                        for book in account.books:
+                            books_str += f"{book.ISBN}," # converts owned books into a str repersentation
+                    account.books = books_str
+
+                    mag_str = None
+                    if account.magazines != None:
+                        mag_str = ''
+                        for mag in account.magazines:
+                            mag_str += f"{mag.issue_num}," # converts owned magazines into a str repersentation
+                    account.magazines = mag_str
+
+                    values = list(account.__dict__.values())
+                    writer.writerow(values) # writes all book attribute values
+        except Exception as e:
+            #To stop all data getting deleted if a crash happens
+            with open(accounts_file, mode='w', newline="") as csvfile:
+                csvfile.write(backup)
+            
+            print("Error: Save File Reverted to Most recent data")
+            raise e
+            
 
     def books_search(self, keyword, attr):
         list = [] # just makes a list so append() can be used
@@ -98,6 +140,7 @@ class Database:
         self.accounts.append(Account(name[0], name[1], id))
         print(self.accounts[-1])
         self.save()
+    
 
     def __repr__(self):
         str = "BOOKS:\n"

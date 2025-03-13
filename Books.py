@@ -2,20 +2,20 @@ from abc import abstractmethod
 
 
 class _LibraryItem:
-    def __init__(self, title, publisher, status):
+    def __init__(self, title, publisher, _checked_in, _checked_in_date=None):
         self.title = title
         self.publisher = publisher
-        self.__checked_in = status
-        self.__checked_in_date = None
+        self._checked_in = _checked_in
+        self._checked_in_date = None
 
     def is_status(self):
-        return self.__checked_in
+        return self._checked_in
     
     def check_out(self):
-        self.__checked_in = True
+        self._checked_in = True
 
     def check_in(self):
-        self.__checked_in = False 
+        self._checked_in = False 
         
     @abstractmethod
     def due_date(self):
@@ -28,8 +28,8 @@ class _LibraryItem:
         return attrs
 
 class Book(_LibraryItem):
-    def __init__(self, title, publisher, author, status, ISBN=0):
-        super().__init__(title, publisher, status)
+    def __init__(self, title, publisher, author, ISBN, _checked_in, _checked_in_date=None ):
+        super().__init__(title, publisher, _checked_in, _checked_in_date)
         self.author = author
         self.ISBN = ISBN
 
@@ -40,7 +40,7 @@ class Book(_LibraryItem):
         return self.ISBN == isbn
 
 class Magazine(_LibraryItem):
-    def __init__(self, title, publisher, status , issue_num=int):
+    def __init__(self, title, publisher, status , issue_num=0):
         super().__init__(title, publisher, status)
         self.issue_num = issue_num
 
