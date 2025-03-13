@@ -85,7 +85,7 @@ class Database:
             with open(books_file, mode='w', newline="") as csvfile:
                 csvfile.write(backup)
             
-            print("Error: Save File Reverted to Most recent data")
+            print("Error: Save Failed, Reverted to Most recent data")
             raise e
             
         with open(accounts_file, mode='r', newline='') as csvfile:
@@ -123,7 +123,7 @@ class Database:
             with open(accounts_file, mode='w', newline="") as csvfile:
                 csvfile.write(backup)
             
-            print("Error: Save File Reverted to Most recent data")
+            print("Error: Save Failed, Reverted to Most recent data")
             raise e
             
 
@@ -161,7 +161,7 @@ class Database:
                 highest = int(current_ISSN[2])
         ISSN = f"0000-0000-{highest+1:04}"
         
-        self.magazines.append(Magazine(title,publisher, issue_num, ISSN))
+        self.magazines.append(Magazine(title, publisher, issue_num, ISSN))
         print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here
 
     def __repr__(self):
