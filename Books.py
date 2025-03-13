@@ -28,21 +28,22 @@ class _LibraryItem:
         return attrs
 
 class Book(_LibraryItem):
-    def __init__(self, title, publisher, author, ISBN, _checked_in, _checked_in_date=None ):
+    def __init__(self, title, publisher, author, _ISBN, _checked_in = True, _checked_in_date=None ):
         super().__init__(title, publisher, _checked_in, _checked_in_date)
         self.author = author
-        self.ISBN = ISBN
+        self._ISBN = _ISBN
 
     def due_date(self):
         return "need to finish this"
     
     def __eq__(self, isbn):
-        return self.ISBN == isbn
+        return self._ISBN == isbn
 
 class Magazine(_LibraryItem):
-    def __init__(self, title, publisher, status , issue_num=0):
-        super().__init__(title, publisher, status)
+    def __init__(self, title, publisher, issue_num=0, _ISSN=0, _checked_in = True, _checked_in_date=None):
+        super().__init__(title, publisher, _checked_in, _checked_in_date)
         self.issue_num = issue_num
+        self._ISSN = _ISSN
 
     def due_date(self):
         return "need to finish this"

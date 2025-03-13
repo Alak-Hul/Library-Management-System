@@ -13,6 +13,9 @@ accounts_csv = os.path.join(here, 'accounts.csv')
 
 db = Database(books_csv, accounts_csv)
 print(db)
+
+db.create_book("testing", "this", "Thing")
+db.create_magazine("testing", "this", "thing")
 class LibraryGUI:
     def __init__(self, root):
         self.root=root

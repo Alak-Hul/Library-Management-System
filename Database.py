@@ -32,6 +32,7 @@ class Database:
             print("ERROR: INVALID BOOK FILE NAME")
 
         self.books = sum(books_grouped_by_library.values(),[]) # Ungroups the books
+        self.magazines = []
         self.libraries = libraries
 
         try:
@@ -53,7 +54,7 @@ class Database:
 
 
         self.accounts = accounts
-
+        
 
     def save(self):
         books_file = self.books_file
@@ -141,6 +142,27 @@ class Database:
         print(self.accounts[-1])
         self.save()
     
+    def create_book(self, title, author, publisher):
+        highest = 0
+        for book in self.books:
+            current_ISBN = book._ISBN.split("-")
+            if int(current_ISBN[2]) > highest:
+                highest = int(current_ISBN[2])
+        ISBN = f"0000-0000-{highest+1:04}"
+
+        self.books.append(Book(title, author, publisher, ISBN))
+        print(f"NEW BOOK: \n{self.books[-1]} ") # or you can make this return something if you want to display it in the UI 
+    
+    def create_magazine(self, title, publisher, issue_num):
+        highest = 0
+        for mgzns in self.magazines:
+            current_ISSN = mgzns._ISSN.split("-")
+            if int(current_ISSN[2]) > highest:
+                highest = int(current_ISSN[2])
+        ISSN = f"0000-0000-{highest+1:04}"
+        
+        self.magazines.append(Magazine(title,publisher, issue_num, ISSN))
+        print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here
 
     def __repr__(self):
         str = "BOOKS:\n"
