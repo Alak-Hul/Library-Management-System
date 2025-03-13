@@ -99,9 +99,14 @@ class LibraryGUI:
         self.login_screen()
 
     def account_generate(self, name, id):
-        self.account_creation_frame.pack_forget()
-        db.create_account(name, id)
-        self.login(id)
+        if name and id:
+            self.account_creation_frame.pack_forget()
+            self.account_creation_frame.destroy()
+            self.account_creation_frame=ttk.Frame(root) 
+            db.create_account(name, id)
+            self.login(id)
+        else: 
+            ttk.Label(self.account_creation_frame, text="Invaild Name, or ID",font=("Arial", 16)).pack(pady=20)
 
     def account_creation(self):
         self.login_frame.pack_forget()
@@ -114,9 +119,11 @@ class LibraryGUI:
         account_full_name_entry = ttk.Entry(account_creation_form, width=30)
         account_full_name_entry.grid(row=0,column=1,padx=5,pady=5)
 
+
         ttk.Label(account_creation_form,text="Student ID:").grid(row=1,column=0,padx=5,pady=5,sticky="e")
         account_ID_entry = ttk.Entry(account_creation_form, width=30)
         account_ID_entry.grid(row=1,column=1,padx=5,pady=5)
+        
 
         ttk.Button(account_creation_form, text="Submit", command=lambda: self.account_generate(account_full_name_entry.get().strip(), account_ID_entry.get().strip())).grid(row=2,column=0,columnspan=2,pady=10)
         ttk.Button(account_creation_form,text="Back",command=self.account_back).grid(row=3,column=0,columnspan=2,pady=10)

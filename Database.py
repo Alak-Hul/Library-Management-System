@@ -77,7 +77,10 @@ class Database:
                 if account.books != None:
                     books_str = ''
                     for book in account.books:
-                        books_str += f"{book.ISBN},"
+                        try:
+                            books_str += f"{book.ISBN},"
+                        except AttributeError:
+                            print("That didn't work")
                     books_str += ''       
                 writer.writerow([account.ID, str(account.get_first_name()), str(account.get_last_name()), str(books_str)])
 
@@ -90,6 +93,8 @@ class Database:
 
     def create_account(self, name, id):
         name = name.split(" ")
+        if len(name) < 2:
+            name.append("None")
         self.accounts.append(Account(name[0], name[1], id))
         print(self.accounts[-1])
         self.save()
