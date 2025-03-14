@@ -175,7 +175,7 @@ class LibraryGUI:
 
         ttk.Label(search_frame_books,text="Search By:").grid(row=0,column=0,padx=5,pady=5)
         self.book_search_attr=tk.StringVar()
-        book_search_attrs=["title","author","publisher","ISBN","library"]
+        book_search_attrs=["Title","Author","Publisher","ISBN","Library"]
         book_search_dropdown=ttk.Combobox(search_frame_books,textvariable=self.book_search_attr,values=book_search_attrs)
         book_search_dropdown.grid(row=0,column=1,padx=5,pady=5)
 
@@ -295,7 +295,15 @@ class LibraryGUI:
             search_tree.delete(i)
 
         # Perform search
-        results=db.books_search(keyword,search_attr)
+        book_search_mapping={
+            "Title": "title",
+            "Author": "author",
+            "Publisher": "publisher",
+            "ISBN": "_ISBN",
+            "Library": "library"
+        }
+
+        results=db.books_search(keyword,book_search_mapping[search_attr])
         
         for item in results:
             library_location = "Unknown"
