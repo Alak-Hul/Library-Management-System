@@ -133,6 +133,13 @@ class Database:
             if keyword.lower() in getattr(book, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
                 list.append(book) # adds the book that matchs the keyword to the list 
         return list # Returns a list of books that match the search criteria.
+    
+    def magazine_search(self, keyword, attr):
+        list = [] # just makes a list so append() can be used
+        for magazine in self.magazines: # Iterates though all books in the database
+            if keyword.lower() in getattr(magazine, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
+                list.append(magazine) # adds the book that matchs the keyword to the list 
+        return list # Returns a list of books that match the search criteria.
 
     def create_account(self, name, id):
         name = name.split(" ")

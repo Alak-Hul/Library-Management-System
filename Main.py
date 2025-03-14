@@ -285,7 +285,7 @@ class LibraryGUI:
             search_tree=self.book_search_tree
             search_attr=self.book_search_attr.get()
             keyword=self.book_search_entry.get()
-        else:
+        elif item_type=="magazines": # just makes it more readable nothing wrong with how you did it 
             search_tree=self.magazine_search_tree
             search_attr=self.magazine_search_attr.get()
             keyword=self.magazine_search_entry.get()
@@ -317,7 +317,7 @@ class LibraryGUI:
                     second_column=item.author 
                     third_column=item.publisher 
                     id_column=item._ISBN 
-                else: 
+                if item_type=="magazine": # same here: line 288 
                     second_column=item.publisher
                     third_column="Magazine"
                     id_column=item.issue_num
