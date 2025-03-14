@@ -303,7 +303,7 @@ class LibraryGUI:
             "Library": "library"
         }
 
-        results=db.books_search(keyword,book_search_mapping[search_attr])
+        results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be difference to the ones that get sent to book_search that way they can be capitalized and stuff
         
         for item in results:
             library_location = "Unknown"
