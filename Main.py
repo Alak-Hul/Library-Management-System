@@ -308,8 +308,6 @@ class LibraryGUI:
         if book_to_checkout not in self.current_user.books:
             self.current_user.books.append(book_to_checkout)
         
-        db.save()
-        
         self.refresh_my_checked_out_books()
         # Show success message
 
@@ -345,8 +343,6 @@ class LibraryGUI:
                         break
         
         if item_to_return:
-            # Save changes to database
-            db.save()
             # Update UI
             self.refresh_my_checked_out_books()
             # Show success message
@@ -364,7 +360,9 @@ class LibraryGUI:
                     # Get book details
                     title=book.title
                     item_type="Book"
+
                     due_date=book.due_date()
+
                     if book.is_status():
                         status="Checked In"
                     else:
@@ -452,6 +450,12 @@ class LibraryGUI:
                 account_info = f"ID: {account.get_ID()}, Name: {account.get_first_name()} {account.get_last_name()}"
                 self.accounts_list.insert(tk.END, account_info) # Return each account one by one
 
+def save_to_database():
+    db.save()
+    root.destroy()
+
+
 root=tk.Tk()
 lb=LibraryGUI(root)
+root.protocol("WM_DELETE_WINDOW", save_to_database)
 root.mainloop()
