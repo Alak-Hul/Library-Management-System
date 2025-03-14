@@ -14,8 +14,7 @@ accounts_csv = os.path.join(here, 'accounts.csv')
 db = Database(books_csv, accounts_csv)
 print(db)
 
-db.create_book("testing", "this", "Thing")
-db.create_magazine("testing", "this", "thing")
+
 class LibraryGUI:
     def __init__(self, root):
         self.root=root
@@ -74,7 +73,7 @@ class LibraryGUI:
         if login_id:
             matching_login=None
             for account in db.accounts:
-                if str(account.ID)==login_id:
+                if str(account.get_ID())==login_id:
                     matching_login=account
                     break
             
@@ -167,8 +166,8 @@ class LibraryGUI:
         
         for library in db.libraries:
             for book in db.books:
-                if hasattr(book,"ISBN"): # This is to check if the item is a book
-                    self.book_tree.insert("","end",values=(book.ISBN,book.title,book.author,book.author,library.location)) # Returns available Books
+                if hasattr(book,"_ISBN"): # This is to check if the item is a book
+                    self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.author,library.location)) # Returns available Books
 
             # Search for Books
         search_frame_books=ttk.Frame(self.book_frame)
@@ -240,7 +239,7 @@ class LibraryGUI:
         
         if self.current_user:
             ttk.Label(self.my_account_frame, text=f"{self.current_user.get_first_name()} {self.current_user.get_last_name()}",font=("Arial", 16)).pack(pady=10)
-            ttk.Label(self.my_account_frame, text=f"Account ID: {self.current_user.ID}").pack()
+            ttk.Label(self.my_account_frame, text=f"Account ID: {self.current_user.get_ID()}").pack()
 
             ttk.Button(self.my_account_frame, text="Logout", command=self.logout).pack(pady=10)
 
@@ -304,12 +303,12 @@ class LibraryGUI:
                 if item in library.books:
                     library_location = library.location
                     break
-            if (item_type=="book" and hasattr(item,"ISBN")) or (item_type=="magazine" and hasattr(item,"issue_num")):
+            if (item_type=="book" and hasattr(item,"_ISBN")) or (item_type=="magazine" and hasattr(item,"issue_num")):
                 title=item.title
                 if item_type=="book":
                     second_column=item.author 
                     third_column=item.publisher 
-                    id_column=item.ISBN 
+                    id_column=item._ISBN 
                 else: 
                     second_column=item.publisher
                     third_column="Magazine"
@@ -325,8 +324,8 @@ class LibraryGUI:
         keyword = self.account_search_entry.get().lower()
 
         for account in db.accounts: # Search through accounts
-            if (keyword in str(account.ID).lower() or keyword in account.get_first_name().lower() or keyword in account.get_last_name().lower()):
-                account_info = f"ID: {account.ID}, Name: {account.get_first_name()} {account.get_last_name()}"
+            if (keyword in str(account.get_ID()).lower() or keyword in account.get_first_name().lower() or keyword in account.get_last_name().lower()):
+                account_info = f"ID: {account.get_ID()}, Name: {account.get_first_name()} {account.get_last_name()}"
                 self.accounts_list.insert(tk.END, account_info) # Return each account one by one
 
 root=tk.Tk()

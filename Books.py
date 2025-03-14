@@ -33,6 +33,9 @@ class Book(_LibraryItem):
         self.author = author
         self._ISBN = _ISBN
 
+    def get_ISBN(self):
+        return self._ISBN
+
     def due_date(self):
         return "need to finish this"
     

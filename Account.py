@@ -8,10 +8,13 @@ class Account:
         self.magazines = magazines
 
     def get_first_name(self):
-        return self.__first_name
+        return self._first_name
     
     def get_last_name(self):
-        return self.__last_name
+        return self._last_name
+    
+    def get_ID(self):
+        return self._ID
 
     def __repr__(self):
         attrs = ""

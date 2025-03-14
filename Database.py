@@ -106,7 +106,7 @@ class Database:
                     if account.books != None:
                         books_str = ''
                         for book in account.books:
-                            books_str += f"{book.ISBN}," # converts owned books into a str repersentation
+                            books_str += f"{book._ISBN}," # converts owned books into a str repersentation
                     account.books = books_str
 
                     mag_str = None
