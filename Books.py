@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from datetime import datetime, timedelta
 
 
 class _LibraryItem:
@@ -37,7 +38,9 @@ class Book(_LibraryItem):
         return self._ISBN
 
     def due_date(self):
-        return "need to finish this"
+        if self._checked_in_date:
+            return(datetime.strptime(self._checked_in_date,"%Y-%m-%d")+timedelta(days=14)).strftime("%Y-%m-%d")
+        return("14 days from checkout")
     
     def __eq__(self, isbn):
         return self._ISBN == isbn
@@ -49,4 +52,6 @@ class Magazine(_LibraryItem):
         self._ISSN = _ISSN
 
     def due_date(self):
-        return "need to finish this"
+        if self._checked_in_date:
+            return(datetime.strptime(self._checked_in_date,"%Y-%m-%d")+timedelta(days=7)).strftime("%Y-%m-%d")
+        return("7 days from checkout")

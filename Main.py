@@ -19,7 +19,7 @@ class LibraryGUI:
     def __init__(self, root):
         self.root=root
         self.root.title("Library Management System")
-        self.root.geometry("960x540")
+        self.root.geometry("1280x720")
 
         self.current_user=None # Initialize the current user
 
@@ -194,6 +194,9 @@ class LibraryGUI:
         self.book_search_tree.heading("Status", text="Status")
         self.book_search_tree.heading("Library", text="Library")
         self.book_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
+
+        book_checkout_button=ttk.Button(self.book_frame,text="Check Out Selected Book",command=lambda:self.check_out_item("book"))
+        book_checkout_button.pack(pady=5)
         
         # Magazines
         self.magazine_tree=ttk.Treeview(self.magazine_frame,columns=("Title","Publisher","Issue Number","Library"),show="headings")
@@ -233,6 +236,9 @@ class LibraryGUI:
         self.magazine_search_tree.heading("Library",text="Library")
         self.magazine_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
 
+        magazine_checkout_button=ttk.Button(self.magazine_frame,text="Check Out Selected Magazine",command=lambda:self.check_out_item("magazine"))
+        magazine_checkout_button.pack(pady=5)
+
     def my_account_section(self):
         for i in self.my_account_frame.winfo_children():
             i.destroy()
@@ -252,8 +258,7 @@ class LibraryGUI:
             self.my_checked_out_books_tree.heading("Status", text="Status")
             self.my_checked_out_books_tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-            # ttk.Button(self.my_account_frame,text="Return Selected Item",command=self.return_selected_item).pack(pady=10)
-            # Need to add function that returns the selected item (return_selected_item())
+            ttk.Button(self.my_account_frame,text="Return Selected Item",command=self.return_selected_item).pack(pady=10)
 
             self.refresh_my_checked_out_books() # Puts the user's checked out books in list
         else:
@@ -261,23 +266,124 @@ class LibraryGUI:
             ttk.Label(self.my_account_frame,text="Please sign in to access your account").pack()
             ttk.Button(self.my_account_frame,text="Sign In",command=self.logout).pack(pady=20)
 
+    def check_out_item(self,item_type):
+        if not self.current_user:
+            # Show error message that user isn't logged in
+            return
+        if item_type=="book": # Check if item is book
+            if self.item_notebook.index(self.item_notebook.select())==0:
+                selected_item = self.book_tree.selection()
+            if not selected_item:
+                # Show error message telling user to make a book selection
+                return
+            
+            isbn = self.book_tree.item(selected_item[0],'values')[0]
+        else: # Item must be a magazine
+            selected_item=self.book_search_tree.selection()
+            if not selected_item:
+                # Show error message telling user to make a book selection
+                return
+            
+            isbn=self.book_search_tree.item(selected_item[0],'values')[3]
+        
+        book_to_checkout=None
+        for book in db.books:
+            if hasattr(book,'_ISBN') and book._ISBN==isbn:
+                book_to_checkout=book
+                break
+        
+        if not book_to_checkout:
+            # Show error saying book isnt found
+            return
+        
+        if not book_to_checkout.is_status(): # Check if the book is already checked out
+            # Show error saying the book is already checked out
+            return
+        
+        book_to_checkout.check_in()
+        
+        if not self.current_user.books:
+            self.current_user.books=[] # Add to user's books if it's not already there
+        
+        if book_to_checkout not in self.current_user.books:
+            self.current_user.books.append(book_to_checkout)
+        
+        db.save()
+        
+        self.refresh_my_checked_out_books()
+        # Show success message
+
+    def return_selected_item(self):
+        if not self.current_user:
+            return
+        
+        selected_item=self.my_checked_out_books_tree.selection()
+        if not selected_item:
+            # Show error message telling user to make a book selection
+            return
+        
+        title=self.my_checked_out_books_tree.item(selected_item[0],'values')[0]
+        item_type=self.my_checked_out_books_tree.item(selected_item[0],'values')[1]
+        
+        item_to_return=None 
+        
+        if item_type.lower()=="book": # Check if item is a book
+            if self.current_user.books:
+                for book in self.current_user.books:
+                    if book.title==title:
+                        item_to_return=book
+                        book.check_out()
+                        self.current_user.books.remove(book) # Remove from user's books
+                        break
+        else:  # It must be a magazine
+            if self.current_user.magazines:
+                for magazine in self.current_user.magazines:
+                    if magazine.title==title:
+                        item_to_return=magazine
+                        magazine.check_out()
+                        self.current_user.magazines.remove(magazine) # Remove from user's magazines
+                        break
+        
+        if item_to_return:
+            # Save changes to database
+            db.save()
+            # Update UI
+            self.refresh_my_checked_out_books()
+            # Show success message
+        else:
+            # Show error message telling the user the book isn't checked out by them
+            pass
+
     def refresh_my_checked_out_books(self):
         if self.current_user and hasattr(self,"my_checked_out_books_tree"):
             for item in self.my_checked_out_books_tree.get_children():
                 self.my_checked_out_books_tree.delete(item) # Clear current items
+            
             if self.current_user.books:
                 for book in self.current_user.books:
                     # Get book details
                     title=book.title
-                    book_type = "Book"  # This is to check if the item is a book
+                    item_type="Book"
                     due_date=book.due_date()
                     if book.is_status():
                         status="Checked In"
                     else:
                         status="Checked Out" 
                     
-                    self.my_checked_out_books_tree.insert("","end", 
-                        values=(title, book_type, due_date,status))
+                    self.my_checked_out_books_tree.insert("","end",values=(title,item_type, due_date,status))
+            
+            if self.current_user.books:
+                for magazines in self.current_user.magazines:
+                    # Get Magazine details
+                    title=magazines.title
+                    item_type="Magazine"
+                    due_date=magazines.due_date()
+                    if magazines.is_status():
+                        status="Checked In"
+                    else:
+                        status="Checked Out" 
+                    
+                    self.my_checked_out_books_tree.insert("","end",values=(title,item_type, due_date,status))
 
     def libraries_section(self):
         ttk.Label(self.library_frame,text="Libraries", font=("Arial",16)).pack()
