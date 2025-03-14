@@ -262,12 +262,22 @@ class LibraryGUI:
             ttk.Button(self.my_account_frame,text="Sign In",command=self.logout).pack(pady=20)
 
     def refresh_my_checked_out_books(self):
-        if self.current_user and hasattr(self,"my_books_tree"):
+        if self.current_user and hasattr(self,"my_checked_out_books_tree"):
             for item in self.my_checked_out_books_tree.get_children():
-                self.my_checked_out_books_tree.delete(item)
-                
-            if not self.current_user.books:
-                return
+                self.my_checked_out_books_tree.delete(item) # Clear current items
+            if self.current_user.books:
+                for book in self.current_user.books:
+                    # Get book details
+                    title=book.title
+                    book_type = "Book"  # This is to check if the item is a book
+                    due_date=book.due_date()
+                    if book.is_status():
+                        status="Checked In"
+                    else:
+                        status="Checked Out" 
+                    
+                    self.my_checked_out_books_tree.insert("","end", 
+                        values=(title, book_type, due_date,status))
 
     def libraries_section(self):
         ttk.Label(self.library_frame,text="Libraries", font=("Arial",16)).pack()
