@@ -127,10 +127,6 @@ class LibraryGUI:
         ttk.Button(account_creation_form, text="Submit", command=lambda: self.account_generate(account_full_name_entry.get().strip(), account_ID_entry.get().strip())).grid(row=2,column=0,columnspan=2,pady=10)
         ttk.Button(account_creation_form,text="Back",command=self.account_back).grid(row=3,column=0,columnspan=2,pady=10)
 
-    
-
-
-
     def guest_login(self):
         self.current_user=None
         self.login_frame.pack_forget()
@@ -165,7 +161,7 @@ class LibraryGUI:
         self.book_tree.pack(fill="both",expand=True)
         
         for library in db.libraries:
-            for book in db.books:
+            for book in library.books:
                 if hasattr(book,"_ISBN"): # This is to check if the item is a book
                     self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.author,library.location)) # Returns available Books
 
@@ -441,6 +437,7 @@ class LibraryGUI:
                     item_status="Checked Out"
 
                 search_tree.insert("","end",values=(title,second_column,third_column,id_column,item_status,library_location)) # Returns searched, available items
+    
     def search_account(self):
         self.accounts_list.delete(0, tk.END) # Clear old results
         keyword = self.account_search_entry.get().lower()
@@ -453,7 +450,6 @@ class LibraryGUI:
 def save_to_database():
     db.save()
     root.destroy()
-
 
 root=tk.Tk()
 lb=LibraryGUI(root)
