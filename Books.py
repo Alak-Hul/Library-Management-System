@@ -6,7 +6,7 @@ class _LibraryItem:
     def __init__(self, title, publisher, _checked_in, _checked_in_date=None):
         self.title = title
         self.publisher = publisher
-        self._checked_in = _checked_in
+        self._checked_in = True if _checked_in == "True" else False
         self._checked_in_date = None
 
     def is_status(self):
