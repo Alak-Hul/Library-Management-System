@@ -16,10 +16,12 @@ print(db)
 
 
 class LibraryGUI:
-    def __init__(self, root):
+    def __init__(self, root, admin_id=100982527): # Default admin ID is 100982527, Kurtis Stubbe
         self.root=root
         self.root.title("Library Management System")
         self.root.geometry("1280x720")
+
+        self.admin_id = admin_id
 
         self.current_user=None # Initialize the current user
 
@@ -36,6 +38,8 @@ class LibraryGUI:
         self.items_frame=ttk.Frame(self.notebook)
         self.my_account_frame=ttk.Frame(self.notebook)
         self.library_frame=ttk.Frame(self.notebook)
+        
+        self.admin_frame = ttk.Frame(self.notebook)
 
         self.notebook.add(self.items_frame,text="Items")
         self.notebook.add(self.my_account_frame,text="My Account")
@@ -43,6 +47,7 @@ class LibraryGUI:
 
         self.items_section()
         self.libraries_section()
+        self.admin_section()
 
         self.login_screen()
 
@@ -83,6 +88,7 @@ class LibraryGUI:
                 print(f"login success {matching_login.get_first_name()} {matching_login.get_last_name()}")
                 self.login_frame.pack_forget()
                 self.my_account_section()
+                self.toggle_admin_tab()
                 self.main_frame.pack(expand=True,fill="both")
             else:
                 # Show error that id isnt found
@@ -90,6 +96,22 @@ class LibraryGUI:
         else:
             # Show error
             print("error")
+    
+    def toggle_admin_tab(self):
+        admin_tab_exists=False
+        for i in range(self.notebook.index("end")):
+            if self.notebook.tab(i,"text")==("Admin Panel"): # This is to check if the admin page already exists
+                admin_tab_exists=True
+                break
+        
+        is_admin=(self.current_user.get_ID()==str(self.admin_id)) # Check if current user is admin - True if yes, False if not
+        if is_admin and not admin_tab_exists:
+            self.notebook.add(self.admin_frame,text="Admin Panel") # Adds admin page if the user is an admin
+        elif not is_admin and admin_tab_exists:
+            for i in range(self.notebook.index("end")): # Removes admin page if the user is not admin and the admin tab already created
+                if self.notebook.tab(i,"text")=="Admin Panel":
+                    self.notebook.forget(i)
+                    break
 
     def account_back(self): #honestly I hate this, but it works so who cares
         self.account_creation_frame.pack_forget()
@@ -133,11 +155,21 @@ class LibraryGUI:
         self.main_frame.pack(expand=True,fill="both")
         self.my_account_section()
 
+        self.toggle_admin_tab()
+
     def logout(self):
         self.current_user=None
         self.main_frame.pack_forget()
         self.login_id_entry.delete(0,END)
         self.login_frame.pack(expand=True,fill="both")
+        
+        self.toggle_admin_tab()
+
+    def admin_section(self):
+        ttk.Label(self.admin_frame,text="Admin Panel",font=("Arial",16)).pack(pady=10)
+        
+        admin_notebook=ttk.Notebook(self.admin_frame)
+        admin_notebook.pack(expand=True,fill="both",padx=10,pady=10)
 
     def items_section(self):
         # Items tab creation
@@ -345,7 +377,7 @@ class LibraryGUI:
         else:
             # Show error message telling the user the book isn't checked out by them
             pass
-
+    
     def refresh_my_checked_out_books(self):
         if self.current_user and hasattr(self,"my_checked_out_books_tree"):
             for item in self.my_checked_out_books_tree.get_children():
@@ -453,5 +485,7 @@ def save_to_database():
 
 root=tk.Tk()
 lb=LibraryGUI(root)
+# lb=LibraryGUI(root,XXXXXXXXX) Uncomment, and change X accordingly to whichever ID has the ability to create books
+
 root.protocol("WM_DELETE_WINDOW", save_to_database)
 root.mainloop()
