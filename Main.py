@@ -170,7 +170,159 @@ class LibraryGUI:
         
         admin_notebook=ttk.Notebook(self.admin_frame)
         admin_notebook.pack(expand=True,fill="both",padx=10,pady=10)
+        add_book_frame=ttk.Frame(admin_notebook)
+        add_magazine_frame=ttk.Frame(admin_notebook)
+        
+        # Books
+        admin_notebook.add(add_book_frame,text="Add Book")
+        admin_notebook.add(add_magazine_frame,text="Add Magazine")
+        
+        ttk.Label(add_book_frame,text="Add New Book",font=("Arial",14)).pack(pady=10)
+        
+        book_form=ttk.Frame(add_book_frame)
+        book_form.pack(pady=10)
+        
+        ttk.Label(book_form,text="Title:").grid(row=0,column=0,padx=5,pady=5,sticky="e")
+        self.book_title_entry=ttk.Entry(book_form,width=30)
+        self.book_title_entry.grid(row=0,column=1,padx=5,pady=5)
+    
+        ttk.Label(book_form,text="Author:").grid(row=1,column=0,padx=5,pady=5,sticky="e")
+        self.book_author_entry=ttk.Entry(book_form,width=30)
+        self.book_author_entry.grid(row=1,column=1,padx=5,pady=5)
+        
+        ttk.Label(book_form,text="Publisher:").grid(row=2,column=0,padx=5,pady=5,sticky="e")
+        self.book_publisher_entry=ttk.Entry(book_form,width=30)
+        self.book_publisher_entry.grid(row=2,column=1,padx=5,pady=5)
+        
+        # Library selection for book
+        ttk.Label(book_form,text="Library Location:").grid(row=3,column=0,padx=5,pady=5,sticky="e")
+        self.book_library_var=tk.StringVar()
+        library_locations=[lib.location for lib in db.libraries]
+        self.book_library_dropdown=ttk.Combobox(book_form,textvariable=self.book_library_var,values=library_locations)
+        self.book_library_dropdown.grid(row=3,column=1,padx=5,pady=5)
+        if library_locations:
+            self.book_library_dropdown.current(0)
+        ttk.Button(book_form, text="Add Book", command=self.add_new_book).grid(row=4, column=0, columnspan=2, pady=10)
+        
+        self.book_status_label=ttk.Label(add_book_frame,text="") # Status label for when adding books
+        self.book_status_label.pack(pady=10)
+        
+        # Magazines
+        ttk.Label(add_magazine_frame,text="Add New Magazine",font=("Arial",14)).pack(pady=10)
+        
+        magazine_form = ttk.Frame(add_magazine_frame)
+        magazine_form.pack(pady=10)
+        
+        ttk.Label(magazine_form, text="Title:").grid(row=0, column=0, padx=5, pady=5, sticky="e")
+        self.magazine_title_entry = ttk.Entry(magazine_form, width=30)
+        self.magazine_title_entry.grid(row=0, column=1, padx=5, pady=5)
+        
+        ttk.Label(magazine_form, text="Publisher:").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+        self.magazine_publisher_entry = ttk.Entry(magazine_form, width=30)
+        self.magazine_publisher_entry.grid(row=1, column=1, padx=5, pady=5)
+        
+        ttk.Label(magazine_form, text="Issue Number:").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+        self.magazine_issue_entry = ttk.Entry(magazine_form, width=30)
+        self.magazine_issue_entry.grid(row=2, column=1, padx=5, pady=5)
+        
+        # Library selection for magazine
+        ttk.Label(magazine_form, text="Library Location:").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+        self.magazine_library_var = tk.StringVar()
+        self.magazine_library_dropdown = ttk.Combobox(magazine_form, textvariable=self.magazine_library_var, values=library_locations)
+        self.magazine_library_dropdown.grid(row=3, column=1, padx=5, pady=5)
+        if library_locations:
+            self.magazine_library_dropdown.current(0)
+        ttk.Button(magazine_form, text="Add Magazine", command=self.add_new_magazine).grid(row=4, column=0, columnspan=2, pady=10)
+        
+        self.magazine_status_label = ttk.Label(add_magazine_frame, text="")
+        self.magazine_status_label.pack(pady=10)
+        
+        # Admin info section
+        admin_info_frame = ttk.LabelFrame(self.admin_frame, text="Admin Information")
+        admin_info_frame.pack(fill="x", padx=10, pady=10, side="bottom")
+        
+        ttk.Label(admin_info_frame, text=f"Current Admin ID: {self.admin_id}").pack(pady=5)
 
+    def add_new_book(self):
+        title = self.book_title_entry.get().strip()
+        author = self.book_author_entry.get().strip()
+        publisher = self.book_publisher_entry.get().strip()
+        library_location = self.book_library_var.get()
+        
+        if not (title and author and publisher and library_location):
+            self.book_status_label.config(text="Please fill in all the fields.")
+            return
+        
+        db.create_book(title, author, publisher) # Create the new book
+        
+        new_book = db.books[-1]  # The new book is the last one added
+        
+        for library in db.libraries: # Find the library and add the book to it
+            if library.location == library_location:
+                library.books.append(new_book)
+                break
+        
+        self.book_status_label.config(text=f"Book '{title}' added successfully!")
+        self.book_title_entry.delete(0, END) # Clears entry boxes
+        self.book_author_entry.delete(0, END) #
+        self.book_publisher_entry.delete(0, END) #
+        
+        self.refresh_book_tree() # Refresh book tree now that a new book is added
+
+    def add_new_magazine(self):
+        title = self.magazine_title_entry.get().strip()
+        publisher = self.magazine_publisher_entry.get().strip()
+        issue_num = self.magazine_issue_entry.get().strip()
+        library_location = self.magazine_library_var.get()
+        
+        if not (title and publisher and issue_num and library_location):
+            self.magazine_status_label.config(text="Please fill in all fields")
+            return
+        
+        try:
+            issue_num = int(issue_num)
+        except ValueError:
+            self.magazine_status_label.config(text="Issue Number must be a number")
+            return
+        
+        db.create_magazine(title, publisher, issue_num) # Create the new magazine
+        
+        new_magazine = db.magazines[-1]  # The new magazine is the last one added
+        
+        for library in db.libraries: # Find the library and add the magazine to it
+            if library.location == library_location:
+                if not hasattr(library, "magazines"):
+                    library.magazines = []
+                library.magazines.append(new_magazine)
+                break
+                #Currently doesn't properly add magazine to magazines.csv file
+
+        self.magazine_status_label.config(text=f"Magazine '{title}' added successfully!")
+        self.magazine_title_entry.delete(0, END) # Clears entry boxes
+        self.magazine_publisher_entry.delete(0, END) #
+        self.magazine_issue_entry.delete(0, END) #
+        
+        self.refresh_magazine_tree() # Refresh book tree now that a new magazine is added
+
+    def refresh_book_tree(self):
+        for item in self.book_tree.get_children(): # Clear old list
+            self.book_tree.delete(item)
+        
+        for library in db.libraries: # Refreshes the book tree
+            for book in library.books:
+                if hasattr(book, "_ISBN"): # This is to check if the item is a book
+                    self.book_tree.insert("", "end", values=(book.get_ISBN(), book.title, book.author, book.publisher, library.location))
+
+    def refresh_magazine_tree(self):
+        for item in self.magazine_tree.get_children(): # Clear old list
+            self.magazine_tree.delete(item)
+        
+        for library in db.libraries: # Refreshes the book tree
+            for item in db.magazines:
+                if hasattr(item, "issue_num"): # This is to check if the item is a magazine
+                    self.magazine_tree.insert("", "end", values=(item.title, item.publisher, item.issue_num, library.location))
+
+    
     def items_section(self):
         # Items tab creation
         ttk.Label(self.items_frame,text="Library Items",font=("Arial",16)).pack()
