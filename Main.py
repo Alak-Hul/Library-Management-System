@@ -433,43 +433,42 @@ class LibraryGUI:
         if not self.current_user:
             # Show error message that user isn't logged in
             return
+        selected_item=None
         if item_type=="book": # Check if item is book
-            if self.item_notebook.index(self.item_notebook.select())==0:
-                selected_item = self.book_tree.selection()
-            if not selected_item:
-                # Show error message telling user to make a book selection
-                return
-            
-            isbn = self.book_tree.item(selected_item[0],'values')[0]
-        elif item_type=="magazine": # Item must be a magazine
             selected_item=self.book_search_tree.selection()
             if not selected_item:
                 # Show error message telling user to make a book selection
                 return
             
+            isbn = self.book_search_tree.item(selected_item[0],'values')[3] # 3 because ISBN is in index 3
+            book_to_checkout=None
+            for book in db.books:
+                if hasattr(book,'_ISBN') and book._ISBN==isbn:
+                    book_to_checkout=book
+                    break
+            
+            if not book_to_checkout:
+                # Show error saying book isnt found
+                return
+            
+            if not book_to_checkout.is_status(): # Check if the book is already checked out
+                # Show error saying the book is already checked out
+                return
+            
+            book_to_checkout.check_in()
+            
+            if not self.current_user.books:
+                self.current_user.books=[]
+            
+            if book_to_checkout not in self.current_user.books:
+                self.current_user.books.append(book_to_checkout)
+        elif item_type=="magazine": # Item must be a magazine
+            selected_item=self.magazine_search_tree.selection()
+            if not selected_item:
+                # Show error message telling user to make a book selection
+                return
+            
             isbn=self.book_search_tree.item(selected_item[0],'values')[3]
-        
-        book_to_checkout=None
-        for book in db.books:
-            if hasattr(book,'_ISBN') and book._ISBN==isbn:
-                book_to_checkout=book
-                break
-        
-        if not book_to_checkout:
-            # Show error saying book isnt found
-            return
-        
-        if not book_to_checkout.is_status(): # Check if the book is already checked out
-            # Show error saying the book is already checked out
-            return
-        
-        book_to_checkout.check_in()
-        
-        if not self.current_user.books:
-            self.current_user.books=[] # Add to user's books if it's not already there
-        
-        if book_to_checkout not in self.current_user.books:
-            self.current_user.books.append(book_to_checkout)
         
         self.refresh_my_checked_out_books()
         # Show success message
