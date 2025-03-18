@@ -9,11 +9,11 @@ import os
 here = os.path.dirname(os.path.abspath(__file__))
 
 books_csv = os.path.join(here, 'books.csv')
+magazine_csv = os.path.join(here, 'magazines.csv')
 accounts_csv = os.path.join(here, 'accounts.csv')
 
-db = Database(books_csv, accounts_csv)
+db = Database(books_csv, magazine_csv, accounts_csv)
 print(db)
-
 
 class LibraryGUI:
     def __init__(self, root, admin_id=100982527): # Default admin ID is 100982527, Kurtis Stubbe
@@ -72,7 +72,6 @@ class LibraryGUI:
         ttk.Button(login_form,text="Create Account",command=self.account_creation).grid(row=2,column=0,columnspan=2,pady=5) # Create new account
         
         ttk.Button(login_form,text="Continue as Guest",command=self.guest_login).grid(row=3,column=0,columnspan=2,pady=5) # Guest access
-
 
     def login(self, login_id):
         if login_id:
@@ -248,19 +247,14 @@ class LibraryGUI:
         author = self.book_author_entry.get().strip()
         publisher = self.book_publisher_entry.get().strip()
         library_location = self.book_library_var.get()
+
+        print(f'{author = }, {publisher = }')
         
         if not (title and author and publisher and library_location):
             self.book_status_label.config(text="Please fill in all the fields.")
             return
         
-        db.create_book(title, author, publisher) # Create the new book
-        
-        new_book = db.books[-1]  # The new book is the last one added
-        
-        for library in db.libraries: # Find the library and add the book to it
-            if library.location == library_location:
-                library.books.append(new_book)
-                break
+        db.create_book(title, author, publisher, library_location) # Create the new book
         
         self.book_status_label.config(text=f"Book '{title}' added successfully!")
         self.book_title_entry.delete(0, END) # Clears entry boxes
@@ -285,17 +279,7 @@ class LibraryGUI:
             self.magazine_status_label.config(text="Issue Number must be a number")
             return
         
-        db.create_magazine(title, publisher, issue_num) # Create the new magazine
-        
-        new_magazine = db.magazines[-1]  # The new magazine is the last one added
-        
-        for library in db.libraries: # Find the library and add the magazine to it
-            if library.location == library_location:
-                if not hasattr(library, "magazines"):
-                    library.magazines = []
-                library.magazines.append(new_magazine)
-                break
-                #Currently doesn't properly add magazine to magazines.csv file
+        db.create_magazine(title, publisher, issue_num, library_location) # Create the new magazine
 
         self.magazine_status_label.config(text=f"Magazine '{title}' added successfully!")
         self.magazine_title_entry.delete(0, END) # Clears entry boxes
@@ -318,11 +302,9 @@ class LibraryGUI:
             self.magazine_tree.delete(item)
         
         for library in db.libraries: # Refreshes the book tree
-            for item in db.magazines:
-                if hasattr(item, "issue_num"): # This is to check if the item is a magazine
-                    self.magazine_tree.insert("", "end", values=(item.title, item.publisher, item.issue_num, library.location))
-
-    
+            for magazine in library.magazines:
+                    self.magazine_tree.insert("", "end", values=(magazine.title, magazine.publisher, magazine.issue_num, library.location))
+ 
     def items_section(self):
         # Items tab creation
         ttk.Label(self.items_frame,text="Library Items",font=("Arial",16)).pack()
@@ -346,8 +328,7 @@ class LibraryGUI:
         
         for library in db.libraries:
             for book in library.books:
-                if hasattr(book,"_ISBN"): # This is to check if the item is a book
-                    self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.author,library.location)) # Returns available Books
+                self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.publisher,library.location)) # Returns available Books
 
             # Search for Books
         search_frame_books=ttk.Frame(self.book_frame)
@@ -387,9 +368,8 @@ class LibraryGUI:
         self.magazine_tree.pack(fill="both",expand=True)
         
         for library in db.libraries:
-            for item in db.books:
-                if hasattr(item,"issue_num"): # This is to check if the item is a magazine
-                    self.magazine_tree.insert("","end",values=(item.title,item.publisher,item.issue_num,library.location)) # Return available Magazines
+            for magazine in library.magazines:
+                self.magazine_tree.insert("","end",values=(magazine.title,magazine.publisher,magazine.issue_num,library.location)) # Return available Magazines
 
             # Search for Magazines
         search_frame_magazines=ttk.Frame(self.magazine_frame)
@@ -397,7 +377,7 @@ class LibraryGUI:
 
         ttk.Label(search_frame_magazines,text="Search By:").grid(row=0,column=0,padx=5,pady=5)
         self.magazine_search_attr=tk.StringVar()
-        magazine_search_attrs=["title","publisher","issue_num"]
+        magazine_search_attrs=["Title","Publisher","Issue_num", "ISSN"]
         magazine_search_dropdown=ttk.Combobox(search_frame_magazines,textvariable=self.magazine_search_attr,values=magazine_search_attrs)
         magazine_search_dropdown.grid(row=0,column=1,padx=5,pady=5)
 
@@ -458,7 +438,7 @@ class LibraryGUI:
                 return
             
             isbn = self.book_tree.item(selected_item[0],'values')[0]
-        else: # Item must be a magazine
+        elif item_type=="magazine": # Item must be a magazine
             selected_item=self.book_search_tree.selection()
             if not selected_item:
                 # Show error message telling user to make a book selection
@@ -550,7 +530,7 @@ class LibraryGUI:
                     
                     self.my_checked_out_books_tree.insert("","end",values=(title,item_type, due_date,status))
             
-            if self.current_user.books:
+            if self.current_user.magazines:
                 for magazines in self.current_user.magazines:
                     # Get Magazine details
                     title=magazines.title
@@ -596,9 +576,17 @@ class LibraryGUI:
             "ISBN": "_ISBN",
             "Library": "library"
         }
+        magazine_search_mapping={
+            "Title": "title",
+            "Publisher": "publisher",
+            "ISSN": "_ISSN",
+            "Library": "library"
+        }
 
-        results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be difference to the ones that get sent to book_search that way they can be capitalized and stuff
-        
+        if item_type == "book":
+            results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be difference to the ones that get sent to book_search that way they can be capitalized and stuff
+        elif item_type == "magazines":
+            results=db.magazine_search(keyword,magazine_search_mapping[search_attr])        
         for item in results:
             library_location = "Unknown"
             for library in db.libraries:

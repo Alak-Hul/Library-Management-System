@@ -4,37 +4,63 @@ from Library import Library
 from Account import Account
 
 class Database:
-    def __init__(self, books_file, accounts_file):
+    def __init__(self, books_file, magazine_file, accounts_file):
         self.books_file = books_file
         self.accounts_file = accounts_file
-        books_grouped_by_library = {}
-        libraries = []
+        self.magazine_file = magazine_file
+       
+        self.libraries = []
         accounts = []
         
         #All the code below for books and accounts was made with the intention that it wouldn't be added too if books, magazines, or accounts had aditional attributes added in the future
         try:
-            #BOOKS & LIBRARIES
+            #Books & Libraries
+            books_grouped_by_library = {}
             with open(books_file, newline='') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
 
                 for book_in_csv in reader:
-                    lib = book_in_csv.popitem()[1]
-                    if lib not in books_grouped_by_library:
-                        books_grouped_by_library[lib] = []
-                    book = (Book(**book_in_csv))
-                    books_grouped_by_library[lib].append(book)
+                    library_in_csv = book_in_csv.popitem()[1]
+                    if library_in_csv not in books_grouped_by_library:
+                        books_grouped_by_library[library_in_csv] = []
+                    new_book = Book(**book_in_csv)
+                    books_grouped_by_library[library_in_csv].append(new_book)
 
                 
-                for key, value in books_grouped_by_library.items():
-                    libraries.append(Library(key, value))
+                for location, books in books_grouped_by_library.items():
+                    self.libraries.append(Library(location, books))
 
-        except OSError:
+        except FileNotFoundError:
             print("ERROR: INVALID BOOK FILE NAME")
 
         self.books = sum(books_grouped_by_library.values(),[]) # Ungroups the books
-        self.magazines = []
-        self.libraries = libraries
 
+
+        #Magazine & Libraries
+        try:
+            magazines_grouped_by_library = {}
+            with open(magazine_file, newline='') as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
+
+                for magazine_in_csv in reader:
+                    library_in_csv = magazine_in_csv.popitem()[1]
+                    if library_in_csv not in magazines_grouped_by_library:
+                        magazines_grouped_by_library[library_in_csv] = []
+                    new_magazine =  Magazine(**magazine_in_csv)
+                    magazines_grouped_by_library[library_in_csv].append(new_magazine)
+
+                for location, magazines in magazines_grouped_by_library.items():
+                    existing_library = next(library for library in self.libraries if library.location == location)
+                    if existing_library:
+                        existing_library.magazines = magazines
+                    else:
+                        self.libraries.append(Library(location, magazines))
+
+        except FileNotFoundError:
+            print("ERROR: INVALID MAGAZINE FILE NAME")
+
+        self.magazines = sum(magazines_grouped_by_library.values(),[])
+    
         try:
             #ACCOUNTS
             with open(accounts_file, newline='') as csvfile:
@@ -49,7 +75,7 @@ class Database:
                                 if book == ISBN:
                                     account_in_csv["books"].append(book)
                     accounts.append(Account(**account_in_csv))
-        except OSError:
+        except FileNotFoundError:
             print("ERROR: INVALID ACCOUNT FILE NAME")
 
 
@@ -58,7 +84,9 @@ class Database:
 
     def save(self):
         books_file = self.books_file
+        magazine_file = self.magazine_file
         accounts_file = self.accounts_file
+
 
         backup = ""
 
@@ -75,21 +103,49 @@ class Database:
 
                 writer.writerow(keys) # writes all book attribute names as well as "Library"
 
-                for lib in self.libraries:
-                    for book in lib.books:
+                for library in self.libraries:
+                    for book in library.books:
                         values = list(book.__dict__.values())
-                        values.append(lib.location)
+                        values.append(library.location)
                         writer.writerow(values) # writes all book attribute values as well as its library location
-        except Exception as e:
+
+        except Exception as error:
             #To stop all data getting deleted of a crash happens
             with open(books_file, mode='w', newline="") as csvfile:
                 csvfile.write(backup)
             
             print("Error: Save Failed, Reverted to Most recent data")
-            raise e
+            raise error
             
         with open(accounts_file, mode='r', newline='') as csvfile:
             backup = csvfile.read()
+
+
+        #Magazines & Libraries
+        with open(magazine_file, mode="r", newline='') as csvfile:
+            backup = csvfile.read()
+
+        try:
+            with open(magazine_file, mode="w", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                keys = list(self.magazines[0].__dict__.keys())
+                keys.append("Library")
+
+                writer.writerow(keys)
+
+                for library in self.libraries:
+                    for magazine in library.magazines:
+                        values = list(magazine.__dict__.values())
+                        values.append(library.location)
+                        writer.writerow(values)
+
+        except Exception as error:
+            #To stop all data getting deleted of a crash happens
+            with open(magazine_file, mode='w', newline="") as csvfile:
+                csvfile.write(backup)
+            
+            print("Error: Save Failed, Reverted to Most recent data")
+            raise error
 
 
 
@@ -109,22 +165,22 @@ class Database:
                             books_str += f"{book._ISBN}," # converts owned books into a str repersentation
                     account.books = books_str
 
-                    mag_str = None
+                    magazine_str = None
                     if account.magazines != None:
-                        mag_str = ''
-                        for mag in account.magazines:
-                            mag_str += f"{mag.issue_num}," # converts owned magazines into a str repersentation
-                    account.magazines = mag_str
+                        magazine_str = ''
+                        for magazine in account.magazines:
+                            magazine_str += f"{magazine._ISSN}," # converts owned magazines into a str repersentation
+                    account.magazines = magazine_str
 
                     values = list(account.__dict__.values())
                     writer.writerow(values) # writes all book attribute values
-        except Exception as e:
+        except Exception as error:
             #To stop all data getting deleted if a crash happens
             with open(accounts_file, mode='w', newline="") as csvfile:
                 csvfile.write(backup)
             
             print("Error: Save Failed, Reverted to Most recent data")
-            raise e
+            raise error
             
 
     def books_search(self, keyword, attr):
@@ -149,7 +205,8 @@ class Database:
         print(self.accounts[-1])
         self.save()
     
-    def create_book(self, title, author, publisher):
+    def create_book(self, title, author, publisher, library_location="North"):
+        print(f"{author = }, {publisher = }")
         highest = 0
         for book in self.books:
             current_ISBN = book._ISBN.split("-")
@@ -157,19 +214,35 @@ class Database:
                 highest = int(current_ISBN[2])
         ISBN = f"0000-0000-{highest+1:04}"
 
-        self.books.append(Book(title, author, publisher, ISBN))
+        new_book = Book(title, publisher, author, ISBN)
+
+        for library in self.libraries: # Find the library and add the book to it
+            if library.location == library_location:
+                library.books.append(new_book)
+                break
+
+        self.books.append(new_book)
         print(f"NEW BOOK: \n{self.books[-1]} ") # or you can make this return something if you want to display it in the UI 
     
-    def create_magazine(self, title, publisher, issue_num):
+    def create_magazine(self, title, publisher, issue_num, library_location="north"):
         highest = 0
-        for mgzns in self.magazines:
-            current_ISSN = mgzns._ISSN.split("-")
-            if int(current_ISSN[2]) > highest:
-                highest = int(current_ISSN[2])
+        for magazine in self.magazines:
+            current_ISSN = magazine._ISSN.split("-")
+            if int(current_ISSN[1]) > highest:
+                highest = int(current_ISSN[1])
         ISSN = f"0000-0000-{highest+1:04}"
+
+        new_magazine = Magazine(title, publisher, issue_num, ISSN)
+
+        for library in self.libraries: # Find the library and add the magazine to it
+            if library.location == library_location:
+                library.magazines.append(new_magazine)
+                print(library)
+                break
+                
         
-        self.magazines.append(Magazine(title, publisher, issue_num, ISSN))
-        print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here
+        self.magazines.append(new_magazine)
+        print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here: line 169
 
     def __repr__(self):
         str = "BOOKS:\n"

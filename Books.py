@@ -48,7 +48,7 @@ class Book(_LibraryItem):
 class Magazine(_LibraryItem):
     def __init__(self, title, publisher, issue_num=0, _ISSN=0, _checked_in = True, _checked_in_date=None):
         super().__init__(title, publisher, _checked_in, _checked_in_date)
-        self.issue_num = issue_num
+        self.issue_num = f"{issue_num:03}"
         self._ISSN = _ISSN
 
     def due_date(self):
