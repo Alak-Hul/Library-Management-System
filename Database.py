@@ -1,17 +1,22 @@
 import csv
+import pickle
 from Books import Book, Magazine
 from Library import Library
 from Account import Account
 
 class Database:
-    def __init__(self, books_file, magazine_file, accounts_file):
+    def __init__(self, books_file, magazine_file, libraries_file, accounts_file):
         self.books_file = books_file
         self.accounts_file = accounts_file
+        self.libraries_file = libraries_file
         self.magazine_file = magazine_file
        
         self.libraries = []
-        accounts = []
+        self.books = []
+        self.magazines = []
+        self.accounts = []
         
+        '''
         #All the code below for books and accounts was made with the intention that it wouldn't be added too if books, magazines, or accounts had aditional attributes added in the future
         try:
             #Books & Libraries
@@ -74,13 +79,53 @@ class Database:
                             for book in self.books:
                                 if book == ISBN:
                                     account_in_csv["books"].append(book)
-                    accounts.append(Account(**account_in_csv))
+                    self.accounts.append(Account(**account_in_csv))
         except FileNotFoundError:
             print("ERROR: INVALID ACCOUNT FILE NAME")
+        '''
 
-
-        self.accounts = accounts
         
+        
+    # WHY DIDN'T I DO MORE RESEARCH ON HOW TO SAVE OBJECTS I WASTED SO MUCH TIME
+    def save_data(self):
+        try:
+            with open(self.books_file, "wb") as pkl_file:
+                pickle.dump(self.books, pkl_file)
+        except FileNotFoundError:
+            print("ERROR: Invaild Books File")
+        
+        try:
+            with open(self.magazine_file, 'wb') as pkl_file:
+                pickle.dump(self.magazines, pkl_file)
+        except FileNotFoundError:
+            print("ERROR: Invaild Magazines File")
+
+        try:
+            with open(self.libraries_file, "wb") as pkl_file:
+                pickle.dump(self.libraries, pkl_file)
+        except FileNotFoundError:
+            print("ERROR: Invaild Libraries File")
+
+        try:
+            with open(self.accounts_file, 'wb') as pkl_file:
+                pickle.dump(self.accounts, pkl_file)
+        except FileNotFoundError:
+            print("ERROR: Invaild Accounts File")
+        
+            
+
+    def load_data(self):
+        with open(self.books_file, "rb") as pkl_file:
+            self.books = pickle.load(pkl_file)
+        
+        with open(self.magazine_file, "rb") as pkl_file:
+            self.magazines = pickle.load(pkl_file)
+
+        with open(self.libraries_file, 'rb') as pkl_file:
+            self.libraries = pickle.load(pkl_file)
+        
+        with open(self.accounts_file, "rb") as pkl_file:
+            self.accounts = pickle.load(pkl_file)
 
     def save(self):
         books_file = self.books_file
@@ -249,10 +294,10 @@ class Database:
         for book in self.books:
             str += f"    {book} \n"
         str += "LIBRARIES: \n"
-        for lib in self.libraries:
-            str += f"    {lib}"
+        for library in self.libraries:
+            str += f"    {library}"
         str += "ACCOUNTS: \n"
-        for acc in self.accounts:
-            str += f"    {acc}"
+        for account in self.accounts:
+            str += f"    {account}"
         return str
     

@@ -8,11 +8,14 @@ import os
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-books_csv = os.path.join(here, 'books.csv')
-magazine_csv = os.path.join(here, 'magazines.csv')
-accounts_csv = os.path.join(here, 'accounts.csv')
+books_pkl = os.path.join(here, 'books.pkl')
+magazine_pkl = os.path.join(here, 'magazines.pkl')
+libraries_pkl = os.path.join(here, 'libraries.pkl')
+accounts_pkl = os.path.join(here, 'accounts.pkl')
 
-db = Database(books_csv, magazine_csv, accounts_csv)
+db = Database(books_pkl, magazine_pkl, libraries_pkl, accounts_pkl)
+print(db)
+db.load_data()
 print(db)
 
 class LibraryGUI:
@@ -621,7 +624,7 @@ class LibraryGUI:
                 self.accounts_list.insert(tk.END, account_info) # Return each account one by one
 
 def save_to_database():
-    db.save()
+    db.save_data()
     root.destroy()
 
 root=tk.Tk()
