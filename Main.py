@@ -561,7 +561,7 @@ class LibraryGUI:
             search_tree=self.book_search_tree
             search_attr=self.book_search_attr.get()
             keyword=self.book_search_entry.get()
-        elif item_type=="magazines": # just makes it more readable nothing wrong with how you did it 
+        elif item_type=="magazine": # just makes it more readable nothing wrong with how you did it 
             search_tree=self.magazine_search_tree
             search_attr=self.magazine_search_attr.get()
             keyword=self.magazine_search_entry.get()
@@ -588,7 +588,7 @@ class LibraryGUI:
 
         if item_type == "book":
             results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be difference to the ones that get sent to book_search that way they can be capitalized and stuff
-        elif item_type == "magazines":
+        elif item_type == "magazine":
             results=db.magazine_search(keyword,magazine_search_mapping[search_attr])        
         for item in results:
             library_location = "Unknown"
