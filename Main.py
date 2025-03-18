@@ -377,7 +377,7 @@ class LibraryGUI:
 
         ttk.Label(search_frame_magazines,text="Search By:").grid(row=0,column=0,padx=5,pady=5)
         self.magazine_search_attr=tk.StringVar()
-        magazine_search_attrs=["Title","Publisher","Issue_num", "ISSN"]
+        magazine_search_attrs=["Title","Publisher","Issue Number", "ISSN"]
         magazine_search_dropdown=ttk.Combobox(search_frame_magazines,textvariable=self.magazine_search_attr,values=magazine_search_attrs)
         magazine_search_dropdown.grid(row=0,column=1,padx=5,pady=5)
 
@@ -580,6 +580,7 @@ class LibraryGUI:
             "Title": "title",
             "Publisher": "publisher",
             "ISSN": "_ISSN",
+            "Issue Number": "issue num",
             "Library": "library"
         }
 
