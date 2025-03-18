@@ -12,10 +12,10 @@ class _LibraryItem:
     def is_status(self):
         return self._checked_in
     
-    def check_out(self):
+    def check_in(self):
         self._checked_in = True
 
-    def check_in(self):
+    def check_out(self):
         self._checked_in = False 
         
     @abstractmethod
@@ -50,6 +50,9 @@ class Magazine(_LibraryItem):
         super().__init__(title, publisher, _checked_in, _checked_in_date)
         self.issue_num = f"{issue_num:03}"
         self._ISSN = _ISSN
+
+    def get_ISSN(self):
+        return self._ISSN
 
     def due_date(self):
         if self._checked_in_date:

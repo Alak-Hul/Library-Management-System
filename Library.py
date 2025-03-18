@@ -7,13 +7,17 @@ class Library:
 
 
     def __str__(self):
-        str = f"Location: {self.location} \n    Books: \n"
+        str = f"Location: {self.location} \n"
         
-        booksStr = ""
+        booksStr = "Books: \n"
         for book in self.books:
             booksStr = booksStr + f'        {book} \n'
 
-        return str +  booksStr + '\n'
+
+        magazine_str = "f'Magazines: \n"
+        for magazine in self.magazines:
+            magazine_str = magazine_str + f"         {magazine} \n"
+        return str +  booksStr + '\n' + magazine_str
 
 
 

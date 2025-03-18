@@ -8,14 +8,12 @@ import os
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-books_pkl = os.path.join(here, 'books.pkl')
-magazine_pkl = os.path.join(here, 'magazines.pkl')
-libraries_pkl = os.path.join(here, 'libraries.pkl')
-accounts_pkl = os.path.join(here, 'accounts.pkl')
+books_csv = os.path.join(here, 'csvfiles/books.csv')
+magazine_csv = os.path.join(here, 'csvfiles/magazines.csv')
+libraries_csv = os.path.join(here, 'csvfiles/libraries.csv')
+accounts_csv = os.path.join(here, 'csvfiles/accounts.csv')
 
-db = Database(books_pkl, magazine_pkl, libraries_pkl, accounts_pkl)
-print(db)
-db.load_data()
+db = Database(books_csv, magazine_csv, libraries_csv, accounts_csv)
 print(db)
 
 class LibraryGUI:
@@ -350,11 +348,11 @@ class LibraryGUI:
         book_search_button=ttk.Button(search_frame_books,text="Search",command=lambda: self.search_items("book"))
         book_search_button.grid(row=0,column=4,padx=5,pady=5)
 
-        self.book_search_tree=ttk.Treeview(self.book_frame,columns=("Title","Author","Publisher","ISBN","Status","Library"),show="headings")
+        self.book_search_tree=ttk.Treeview(self.book_frame,columns=("ISBN","Title","Author","Publisher", "Status", "Library"),show="headings")
+        self.book_search_tree.heading("ISBN", text="ISBN")
         self.book_search_tree.heading("Title", text="Title")
         self.book_search_tree.heading("Author", text="Author")
         self.book_search_tree.heading("Publisher", text="Publisher")
-        self.book_search_tree.heading("ISBN", text="ISBN")
         self.book_search_tree.heading("Status", text="Status")
         self.book_search_tree.heading("Library", text="Library")
         self.book_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
@@ -363,16 +361,18 @@ class LibraryGUI:
         book_checkout_button.pack(pady=5)
         
         # Magazines
-        self.magazine_tree=ttk.Treeview(self.magazine_frame,columns=("Title","Publisher","Issue Number","Library"),show="headings")
+        self.magazine_tree=ttk.Treeview(self.magazine_frame,columns=("ISSN","Title","Publisher","Issue Number","Status","Library"),show="headings")
+        self.magazine_tree.heading("ISSN", text="ISSN")
         self.magazine_tree.heading("Title",text="Title")
         self.magazine_tree.heading("Publisher",text="Publisher")
         self.magazine_tree.heading("Issue Number",text="Issue Number")
+        self.magazine_tree.heading("Status", text='Status')
         self.magazine_tree.heading("Library",text="Library")
         self.magazine_tree.pack(fill="both",expand=True)
         
         for library in db.libraries:
             for magazine in library.magazines:
-                self.magazine_tree.insert("","end",values=(magazine.title,magazine.publisher,magazine.issue_num,library.location)) # Return available Magazines
+                self.magazine_tree.insert("","end",values=(magazine.get_ISSN(), magazine.title, magazine.publisher, magazine.issue_num, "Checked In" if magazine.is_status() else "Checked Out", library.location)) # Return available Magazines
 
             # Search for Magazines
         search_frame_magazines=ttk.Frame(self.magazine_frame)
@@ -391,12 +391,13 @@ class LibraryGUI:
         magazine_search_button=ttk.Button(search_frame_magazines,text="Search",command=lambda: self.search_items("magazine"))
         magazine_search_button.grid(row=0,column=4,padx=5,pady=5)
 
-        self.magazine_search_tree=ttk.Treeview(self.magazine_frame,columns=("Title","Publisher","Issue Number","ISSN","Status"),show="headings")
+        self.magazine_search_tree=ttk.Treeview(self.magazine_frame,columns=("ISSN","Title","Publisher","Issue Number","Status","Library",),show="headings")
+        self.magazine_search_tree.heading("ISSN",text="ISSN")
         self.magazine_search_tree.heading("Title",text="Title")
         self.magazine_search_tree.heading("Publisher",text="Publisher")
         self.magazine_search_tree.heading("Issue Number",text="Issue Number")
-        self.magazine_search_tree.heading("ISSN",text="ISSN")
         self.magazine_search_tree.heading("Status",text="Status")
+        self.magazine_search_tree.heading("Library", text="Library")
         self.magazine_search_tree.pack(padx=10,pady=10,expand=True,fill="both")
 
         magazine_checkout_button=ttk.Button(self.magazine_frame,text="Check Out Selected Magazine",command=lambda:self.check_out_item("magazine"))
@@ -433,58 +434,66 @@ class LibraryGUI:
         if not self.current_user:
             # Show error message that user isn't logged in
             return
-        selected_item=None
         
         if item_type=="book": # Check if item is book
-            selected_item=self.book_search_tree.selection()
-            if not selected_item:
+            search_selection = self.book_search_tree.selection()
+            normal_selection = self.book_tree.selection()
+
+            if not search_selection and not normal_selection:
+                # Show error message telling user to make a magazine selection
+                print("ERROR: Select a book")
+                return
+
+            data = None
+            if search_selection:
+                data = self.book_search_tree.item(search_selection[0], 'values')
+                
+            elif normal_selection: 
+                data = self.book_tree.item(normal_selection[0], 'values')
+
+            isbn = data[0]
+            library = next((library for library in db.libraries if library.location == data[-1]), None)
+
+            print(isbn)
+
+            if not isbn:
                 # Show error message telling user to make a book selection
+                print(f"ERROR: ISBN not found")
                 return
             
-            isbn = self.book_search_tree.item(selected_item[0],'values')[3] # 3 because ISBN is in index 3
-            book_to_checkout=None
-            for book in db.books:
-                if hasattr(book,'_ISBN') and book._ISBN==isbn:
-                    book_to_checkout=book
-                    break
+            book_to_checkout = db.check_out_book(isbn, self.current_user, library)
             
             if not book_to_checkout:
+                print(f"ERROR: Book couldn't be checked out")
                 # Show error saying book isn't found
                 return
-            
-            if not book_to_checkout.is_status(): # Check if the book is already checked out
-                # Show error saying the book is already checked out
-                return
-            
-            book_to_checkout.check_in()
-            
-            if not self.current_user.books:
-                self.current_user.books=[]
-            
-            if book_to_checkout not in self.current_user.books:
-                self.current_user.books.append(book_to_checkout)
                 
         elif item_type=="magazine": # Item must be a magazine
-            selected_item=self.magazine_search_tree.selection()
-            if not selected_item:
+            search_selection = self.magazine_search_tree.selection()
+            normal_selection = self.magazine_tree.selection()
+            
+            if not search_selection and not normal_selection:
                 # Show error message telling user to make a magazine selection
+                print("ERROR: Select a magazine")
                 return
-            
-            values=self.magazine_search_tree.item(selected_item[0], 'values') # Select correct book in order to assign values
-            title=values[0] # Title
-            publisher=values[1] # Publisher
-            issue_num=values[2] # Issue Number
-            
-            # Find the magazine to check out
-            magazine_to_checkout=None
-            for magazine in db.magazines:
-                # Match based on title, publisher and issue number
-                if (magazine.title==title and 
-                    magazine.publisher==publisher and 
-                    str(magazine.issue_num)==str(issue_num)):
-                    magazine_to_checkout=magazine
-                    break
-            
+
+            data = ""
+            if search_selection:
+                data = self.magazine_search_tree.item(search_selection[0], 'values')
+            elif normal_selection:
+                data = self.magazine_tree.item(normal_selection[0], 'values')
+
+            issn = data[0]
+            library = next((library for library in db.libraries if library.location == data[-1]), None)
+
+
+            if not issn:
+                # Show error message telling user to make a book selection
+                print(f"ERROR: ISSN not found")
+                return
+
+            magazine_to_checkout = db.check_out_magazine(issn, self.current_user,library)
+
             if not magazine_to_checkout:
                 # Show error saying magazine isn't found
                 return
@@ -492,16 +501,9 @@ class LibraryGUI:
             if not magazine_to_checkout.is_status(): # Check if already checked out
                 # Show error saying already checked out
                 return
-            
-            magazine_to_checkout.check_in()
-            
-            if not self.current_user.magazines:
-                self.current_user.magazines=[]
-            
-            if magazine_to_checkout not in self.current_user.magazines:
-                self.current_user.magazines.append(magazine_to_checkout)
         
         self.refresh_my_checked_out_books()
+    
     def return_selected_item(self):
         if not self.current_user:
             return
@@ -517,21 +519,9 @@ class LibraryGUI:
         item_to_return=None 
         
         if item_type.lower()=="book": # Check if item is a book
-            if self.current_user.books:
-                for book in self.current_user.books:
-                    if book.title==title:
-                        item_to_return=book
-                        book.check_out()
-                        self.current_user.books.remove(book) # Remove from user's books
-                        break
+           item_to_return=db.check_in_book(title, self.current_user)
         else:  # It must be a magazine
-            if self.current_user.magazines:
-                for magazine in self.current_user.magazines:
-                    if magazine.title==title:
-                        item_to_return=magazine
-                        magazine.check_out()
-                        self.current_user.magazines.remove(magazine) # Remove from user's magazines
-                        break
+           item_to_return=db.check_in_magazine(title, self.current_user)
         
         if item_to_return:
             # Update UI
@@ -616,7 +606,7 @@ class LibraryGUI:
         }
 
         if item_type == "book":
-            results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be difference to the ones that get sent to book_search that way they can be capitalized and stuff
+            results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be different to the ones that get sent to book_search that way they can be capitalized and stuff
         elif item_type == "magazine":
             results=db.magazine_search(keyword,magazine_search_mapping[search_attr])        
         for item in results:
@@ -625,25 +615,17 @@ class LibraryGUI:
                 if item_type == "book" and item in library.books:
                     library_location = library.location
                     break
-                elif item_type == "magazine" and item in library.magazines:
+                elif item_type == "magazine" and any(item.get_ISSN() == magazine.get_ISSN() for magazine in library.magazines): # IDK it refused to be true
                     library_location = library.location
                     break
-            if (item_type=="book" and hasattr(item,"_ISBN")) or (item_type=="magazine" and hasattr(item,"issue_num")):
-                title=item.title
+            if (item_type=="book" and hasattr(item,"_ISBN")) or (item_type=="magazine" and hasattr(item,"_ISSN")):
                 if item_type=="book":
-                    second_column=item.author 
-                    third_column=item.publisher 
-                    id_column=item._ISBN 
-                else: # This needed to be changed in order to fix issue of searched items having wrong attributes
-                    second_column=item.publisher
-                    third_column=item.issue_num
-                    id_column=getattr(item,"_ISSN","N/A")
-                if item.is_status():
-                    item_status="Checked In"
-                else:
-                    item_status="Checked Out"
-
-                search_tree.insert("","end",values=(title,second_column,third_column,id_column,item_status,library_location)) # Returns searched, available items
+                    #("ISBN","Title","Author","Publisher", "Status", "Library")
+                    values = (item.get_ISBN(), item.title, item.author, item.publisher, "Checked In" if item.is_status() else "Checked Out", library_location)
+                elif item_type == "magazine":
+                    #("ISSN","Title","Publisher","Issue Number","Status","Library",)
+                    values = (item.get_ISSN(), item.title, item.publisher, item.issue_num,"Checked In" if item.is_status() else "Checked Out", library_location)
+                search_tree.insert("","end",values=values) # Returns searched, available items
     
     def search_account(self):
         self.accounts_list.delete(0, tk.END) # Clear old results
@@ -655,7 +637,7 @@ class LibraryGUI:
                 self.accounts_list.insert(tk.END, account_info) # Return each account one by one
 
 def save_to_database():
-    db.save_data()
+    db.save()
     root.destroy()
 
 root=tk.Tk()

@@ -12,11 +12,9 @@ class Database:
         self.magazine_file = magazine_file
        
         self.libraries = []
-        self.books = []
-        self.magazines = []
         self.accounts = []
         
-        '''
+        
         #All the code below for books and accounts was made with the intention that it wouldn't be added too if books, magazines, or accounts had aditional attributes added in the future
         try:
             #Books & Libraries
@@ -37,8 +35,6 @@ class Database:
 
         except FileNotFoundError:
             print("ERROR: INVALID BOOK FILE NAME")
-
-        self.books = sum(books_grouped_by_library.values(),[]) # Ungroups the books
 
 
         #Magazine & Libraries
@@ -63,8 +59,6 @@ class Database:
 
         except FileNotFoundError:
             print("ERROR: INVALID MAGAZINE FILE NAME")
-
-        self.magazines = sum(magazines_grouped_by_library.values(),[])
     
         try:
             #ACCOUNTS
@@ -72,21 +66,32 @@ class Database:
                 reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
                 
                 for account_in_csv in reader:
-                    if account_in_csv["books"] != "None":
+
+                    if account_in_csv["books"] != "":
                         ISBNs = account_in_csv["books"].split(",")
                         account_in_csv["books"] = []
                         for ISBN in ISBNs:
-                            for book in self.books:
-                                if book == ISBN:
-                                    account_in_csv["books"].append(book)
+                            for library in self.libraries:
+                                for book in library.books:
+                                    if book == ISBN:
+                                        account_in_csv["books"].append(book)
+                    else:
+                        account_in_csv["books"] = []
+
+                    if account_in_csv["magazines"] != "":
+                        ISSNs = account_in_csv["magazines"].split(",")
+                        account_in_csv["magazines"] = []
+                        #Todo Finish This
+                    else:
+                        account_in_csv["magazines"] = []
                     self.accounts.append(Account(**account_in_csv))
         except FileNotFoundError:
             print("ERROR: INVALID ACCOUNT FILE NAME")
-        '''
+        
 
         
-        
-    # WHY DIDN'T I DO MORE RESEARCH ON HOW TO SAVE OBJECTS I WASTED SO MUCH TIME
+    '''    
+    # This caused for problem then it was worth
     def save_data(self):
         try:
             with open(self.books_file, "wb") as pkl_file:
@@ -126,6 +131,7 @@ class Database:
         
         with open(self.accounts_file, "rb") as pkl_file:
             self.accounts = pickle.load(pkl_file)
+    '''
 
     def save(self):
         books_file = self.books_file
@@ -143,7 +149,7 @@ class Database:
         try:
             with open(books_file, mode='w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
-                keys = list(self.books[0].__dict__.keys())
+                keys = list(self.libraries[0].books[0].__dict__.keys())
                 keys.append("Library")
 
                 writer.writerow(keys) # writes all book attribute names as well as "Library"
@@ -173,7 +179,7 @@ class Database:
         try:
             with open(magazine_file, mode="w", newline="") as csvfile:
                 writer = csv.writer(csvfile)
-                keys = list(self.magazines[0].__dict__.keys())
+                keys = list(self.libraries[0].magazines[0].__dict__.keys())
                 keys.append("Library")
 
                 writer.writerow(keys)
@@ -230,23 +236,25 @@ class Database:
 
     def books_search(self, keyword, attr):
         list = [] # just makes a list so append() can be used
-        for book in self.books: # Iterates though all books in the database
-            if keyword.lower() in getattr(book, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
-                list.append(book) # adds the book that matchs the keyword to the list 
+        for library in self.libraries:
+            for book in library.books: # Iterates though all books in the database
+                if keyword.lower() in getattr(book, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
+                    list.append(book) # adds the book that matchs the keyword to the list 
         return list # Returns a list of books that match the search criteria.
     
     def magazine_search(self, keyword, attr):
         list = [] # just makes a list so append() can be used
-        for magazine in self.magazines: # Iterates though all books in the database
-            if keyword.lower() in getattr(magazine, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
-                list.append(magazine) # adds the book that matchs the keyword to the list 
+        for library in self.libraries:
+            for magazine in library.magazines: # Iterates though all books in the database
+                if keyword.lower() in getattr(magazine, attr, "").lower(): # getattr() is just so the attrbute can be dynamic, it just finds the object's attribute that has a name that matches the string given. And lower() is just so it isn't case senstive
+                    list.append(magazine) # adds the book that matchs the keyword to the list 
         return list # Returns a list of books that match the search criteria.
 
     def create_account(self, name, id):
         name = name.split(" ")
         if len(name) < 2:
             name.append("None")
-        self.accounts.append(Account(name[0], name[1], id))
+        self.accounts.append(Account(name[0], name[1], id, [], []))
         print(self.accounts[-1])
         self.save()
     
@@ -285,14 +293,42 @@ class Database:
                 print(library)
                 break
                 
-        
         self.magazines.append(new_magazine)
         print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here: line 169
 
+    def check_out_book(self, ISBN, account, library):
+        book = next((book for book in library.books if book.get_ISBN() == ISBN), None) # finds book or give a default value of none
+
+        if book and book not in account.books and book.is_status():
+            account.books.append(book)
+            print(account)
+        return book
+    
+    def check_in_book(self, title, account):
+        book = next((book for book in account.books if book.title == title), None) # finds book or give a default value of none
+        if book:
+            account.books.remove(book)
+        return book
+
+    def check_out_magazine(self, ISSN, account, library):
+        
+        magazine = next((magazine for magazine in library.magazines if magazine.get_ISSN()== ISSN), None) # finds book or give a default value of none
+
+        if magazine and magazine not in account.magazines and magazine.is_status():
+            account.magazines.append(magazine)
+        return magazine
+        
+    def check_in_magazine(self, title, account):
+        magazine = next((magazine for magazine in account.magazines if magazine.title == title), None) # finds book or give a default value of none
+        if magazine:
+            account.magazines.remove(magazine)
+        return magazine
+        
+
+
+
     def __repr__(self):
         str = "BOOKS:\n"
-        for book in self.books:
-            str += f"    {book} \n"
         str += "LIBRARIES: \n"
         for library in self.libraries:
             str += f"    {library}"
