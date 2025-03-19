@@ -27,6 +27,7 @@ class Database:
                     if library_in_csv not in books_grouped_by_library:
                         books_grouped_by_library[library_in_csv] = []
                     new_book = Book(**book_in_csv)
+                    new_book.check_in() # Sets a default to check_in but if they are in a account then it would be set to checked out
                     books_grouped_by_library[library_in_csv].append(new_book)
 
                 
@@ -48,7 +49,9 @@ class Database:
                     if library_in_csv not in magazines_grouped_by_library:
                         magazines_grouped_by_library[library_in_csv] = []
                     new_magazine =  Magazine(**magazine_in_csv)
+                    new_magazine.check_in() # Sets a default to check_in but if they are in a account then it would be set to checked out
                     magazines_grouped_by_library[library_in_csv].append(new_magazine)
+
 
                 for location, magazines in magazines_grouped_by_library.items():
                     existing_library = next(library for library in self.libraries if library.location == location)
@@ -75,13 +78,19 @@ class Database:
                                 for book in library.books:
                                     if book == ISBN:
                                         account_in_csv["books"].append(book)
+                                        book.check_out()
                     else:
                         account_in_csv["books"] = []
 
                     if account_in_csv["magazines"] != "":
                         ISSNs = account_in_csv["magazines"].split(",")
                         account_in_csv["magazines"] = []
-                        #Todo Finish This
+                        for ISSN in ISSNs:
+                            for library in self.libraries:
+                                for magazine in library.magazines:
+                                    if magazine == ISSN:
+                                        account_in_csv["magazines"].append(magazine)
+                                        magazine.check_out()
                     else:
                         account_in_csv["magazines"] = []
                     self.accounts.append(Account(**account_in_csv))
@@ -297,32 +306,39 @@ class Database:
         print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here: line 169
 
     def check_out_book(self, ISBN, account, library):
-        book = next((book for book in library.books if book.get_ISBN() == ISBN), None) # finds book or give a default value of none
+        book = next((book for book in library.books if book == ISBN), None) # finds book or give a default value of none
 
         if book and book not in account.books and book.is_status():
+            book.check_out()
             account.books.append(book)
-            print(account)
-        return book
+            return book
+        return None
     
     def check_in_book(self, title, account):
         book = next((book for book in account.books if book.title == title), None) # finds book or give a default value of none
         if book:
+            book.check_in()
             account.books.remove(book)
-        return book
+            return book
+        return None
 
     def check_out_magazine(self, ISSN, account, library):
         
-        magazine = next((magazine for magazine in library.magazines if magazine.get_ISSN()== ISSN), None) # finds book or give a default value of none
+        magazine = next((magazine for magazine in library.magazines if magazine == ISSN), None) # finds book or give a default value of none
 
         if magazine and magazine not in account.magazines and magazine.is_status():
-            account.magazines.append(magazine)
-        return magazine
+            magazine.check_out()
+            account.magazines.append(magazine)      
+            return magazine
+        return None
         
     def check_in_magazine(self, title, account):
         magazine = next((magazine for magazine in account.magazines if magazine.title == title), None) # finds book or give a default value of none
         if magazine:
+            magazine.check_in()
             account.magazines.remove(magazine)
-        return magazine
+            return magazine
+        return None
         
 
 

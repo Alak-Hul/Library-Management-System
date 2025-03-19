@@ -58,3 +58,6 @@ class Magazine(_LibraryItem):
         if self._checked_in_date:
             return(datetime.strptime(self._checked_in_date,"%Y-%m-%d")+timedelta(days=7)).strftime("%Y-%m-%d")
         return("7 days from checkout")
+    
+    def __eq__(self, ISSN):
+        return self._ISSN == ISSN

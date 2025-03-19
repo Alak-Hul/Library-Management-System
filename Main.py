@@ -433,6 +433,7 @@ class LibraryGUI:
     def check_out_item(self,item_type):
         if not self.current_user:
             # Show error message that user isn't logged in
+            print("Guests can't checkout books")
             return
         
         if item_type=="book": # Check if item is book
@@ -452,9 +453,9 @@ class LibraryGUI:
                 data = self.book_tree.item(normal_selection[0], 'values')
 
             isbn = data[0]
-            library = next((library for library in db.libraries if library.location == data[-1]), None)
+            library = next((library for library in db.libraries if library.location == data[-1]), None) # Finds library object
 
-            print(isbn)
+            print(f"BOOK CHECKED OUT: {isbn}")
 
             if not isbn:
                 # Show error message telling user to make a book selection
@@ -464,7 +465,7 @@ class LibraryGUI:
             book_to_checkout = db.check_out_book(isbn, self.current_user, library)
             
             if not book_to_checkout:
-                print(f"ERROR: Book couldn't be checked out")
+                print(f"ERROR: Book couldn't be found")
                 # Show error saying book isn't found
                 return
                 
@@ -484,9 +485,9 @@ class LibraryGUI:
                 data = self.magazine_tree.item(normal_selection[0], 'values')
 
             issn = data[0]
-            library = next((library for library in db.libraries if library.location == data[-1]), None)
+            library = next((library for library in db.libraries if library.location == data[-1]), None) # Finds library object
 
-
+            print(f"MAGAZINE CHECKED OUT: {issn}")
             if not issn:
                 # Show error message telling user to make a book selection
                 print(f"ERROR: ISSN not found")
@@ -496,11 +497,9 @@ class LibraryGUI:
 
             if not magazine_to_checkout:
                 # Show error saying magazine isn't found
+                print("ERROR: Magazine is not found")
                 return
-            
-            if not magazine_to_checkout.is_status(): # Check if already checked out
-                # Show error saying already checked out
-                return
+
         
         self.refresh_my_checked_out_books()
     
@@ -567,13 +566,14 @@ class LibraryGUI:
     def libraries_section(self):
         ttk.Label(self.library_frame,text="Libraries", font=("Arial",16)).pack()
 
-        self.libraries_tree=ttk.Treeview(self.library_frame, columns=("Location","Number of Books"),show="headings")
+        self.libraries_tree=ttk.Treeview(self.library_frame, columns=("Location","Number of Books", "Number of Magazines"),show="headings")
         self.libraries_tree.heading("Location",text="Location")
         self.libraries_tree.heading("Number of Books",text="Number of Books")
+        self.libraries_tree.heading("Number of Magazines", text="Number of Magazines")
         self.libraries_tree.pack(fill="both",expand=True)
 
         for library in db.libraries:
-            self.libraries_tree.insert("","end",values=(library.location,len(library.books))) # Return available libraries
+            self.libraries_tree.insert("","end",values=(library.location,len(library.books),len(library.magazines))) # Return available libraries
 
     def search_items(self,item_type):
         if item_type=="book":
@@ -603,10 +603,10 @@ class LibraryGUI:
             "ISSN": "_ISSN",
             "Issue Number": "issue num",
             "Library": "library"
-        }
+        } # This just allows for the options in the drop down to be different to the ones that get sent to book_search that way they can be capitalized and stuff
 
         if item_type == "book":
-            results=db.books_search(keyword,book_search_mapping[search_attr]) # This just allows for the options in the drop down to be different to the ones that get sent to book_search that way they can be capitalized and stuff
+            results=db.books_search(keyword,book_search_mapping[search_attr]) 
         elif item_type == "magazine":
             results=db.magazine_search(keyword,magazine_search_mapping[search_attr])        
         for item in results:
@@ -615,7 +615,7 @@ class LibraryGUI:
                 if item_type == "book" and item in library.books:
                     library_location = library.location
                     break
-                elif item_type == "magazine" and any(item.get_ISSN() == magazine.get_ISSN() for magazine in library.magazines): # IDK it refused to be true
+                elif item_type == "magazine" and any(item.get_ISSN() == magazine for magazine in library.magazines): # IDK it refused to be true
                     library_location = library.location
                     break
             if (item_type=="book" and hasattr(item,"_ISBN")) or (item_type=="magazine" and hasattr(item,"_ISSN")):
