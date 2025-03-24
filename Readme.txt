@@ -21,7 +21,7 @@ Overview
 
 Installation
   1. Clone the repository:
-  git clone https://github.com/yourusername/library-management-system.git=
+  git clone https://github.com/Alak-Hul/Library-Management-System.git
   2. Run the Application:
   python [path to the directory]/Main.py
 
