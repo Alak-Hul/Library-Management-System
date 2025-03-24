@@ -21,13 +21,13 @@ Overview
 
 Installation
   1. Clone the repository:
-  git clone https://github.com/yourusername/library-management-system.git
-  2. Navigate to the projects directory:
-  cd library-management-system
-  3. Run the Application:
-  python Main.py
+  git clone https://github.com/yourusername/library-management-system.git=
+  2. Run the Application:
+  python [path to the directory]/Main.py
 
 How to use
+
+  Run the Application, and as:
 
   Regular User
     1. Log in with your user ID or create a new account
@@ -45,10 +45,3 @@ How to use
     2. Access the "Admin Panel" tab
     3. Add new books or magazines to the system
     4. Specify which library location to add items to
-
-  Data Storage
-    The application saves all changes to CSV files when closed properly. Data is stored in the following format:
-    - Books: ISBN, title, author, publisher, status
-    - Magazines: ISSN, title, publisher, issue number, status
-    - Libraries: Location, books list, magazines list
-    - Accounts: ID, name, checked-out items
