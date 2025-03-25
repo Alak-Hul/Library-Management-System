@@ -372,7 +372,7 @@ class LibraryGUI:
             for magazine in library.magazines:
                 self.magazine_tree.insert("","end",values=(magazine.get_ISSN(), magazine.title, magazine.publisher, magazine.issue_num, "Checked In" if magazine.is_status() else "Checked Out", library.location)) # Return available Magazines
 
-            # Search for Magazines
+            # Search for Magaziness
         search_frame_magazines=ttk.Frame(self.magazine_frame)
         search_frame_magazines.pack(pady=10)
 
