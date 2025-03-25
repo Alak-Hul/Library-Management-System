@@ -5,16 +5,22 @@ from Library import Library
 from Account import Account
 
 class Database:
-    def __init__(self, books_file, magazine_file, libraries_file, accounts_file):
+    def __init__(self, books_file, magazines_file, accounts_file):
         self.books_file = books_file
+        self.magazines_file = magazines_file
         self.accounts_file = accounts_file
-        self.libraries_file = libraries_file
-        self.magazine_file = magazine_file
+
+        
        
         self.libraries = []
         self.accounts = []
+
+        self.load_data()
         
-        
+    def load_data(self):
+        books_file = self.books_file
+        magazines_file = self.magazines_file
+        accounts_file = self.accounts_file
         #All the code below for books and accounts was made with the intention that it wouldn't be added too if books, magazines, or accounts had aditional attributes added in the future
         try:
             #Books & Libraries
@@ -41,7 +47,7 @@ class Database:
         #Magazine & Libraries
         try:
             magazines_grouped_by_library = {}
-            with open(magazine_file, newline='') as csvfile:
+            with open(magazines_file, newline='') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
 
                 for magazine_in_csv in reader:
@@ -142,7 +148,7 @@ class Database:
             self.accounts = pickle.load(pkl_file)
     '''
 
-    def save(self):
+    def save_data(self):
         books_file = self.books_file
         magazine_file = self.magazine_file
         accounts_file = self.accounts_file
@@ -242,7 +248,6 @@ class Database:
             print("Error: Save Failed, Reverted to Most recent data")
             raise error
             
-
     def books_search(self, keyword, attr):
         list = [] # just makes a list so append() can be used
         for library in self.libraries:
@@ -267,7 +272,7 @@ class Database:
         print(self.accounts[-1])
         self.save()
     
-    def create_book(self, title, author, publisher, library_location="North"):
+    def create_book(self, title, author, publisher, library_location):
         print(f"{author = }, {publisher = }")
         highest = 0
         for book in self.books:
@@ -286,7 +291,7 @@ class Database:
         self.books.append(new_book)
         print(f"NEW BOOK: \n{self.books[-1]} ") # or you can make this return something if you want to display it in the UI 
     
-    def create_magazine(self, title, publisher, issue_num, library_location="north"):
+    def create_magazine(self, title, publisher, issue_num, library_locationch):
         highest = 0
         for magazine in self.magazines:
             current_ISSN = magazine._ISSN.split("-")
@@ -341,9 +346,7 @@ class Database:
         return None
         
 
-
-
-    def __repr__(self):
+    def __str__(self):
         str = "BOOKS:\n"
         str += "LIBRARIES: \n"
         for library in self.libraries:

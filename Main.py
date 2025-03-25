@@ -1,19 +1,17 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import os
 
 from Database import Database
-import os
 
 here = os.path.dirname(os.path.abspath(__file__))
 
 books_csv = os.path.join(here, 'csvfiles/books.csv')
 magazine_csv = os.path.join(here, 'csvfiles/magazines.csv')
-libraries_csv = os.path.join(here, 'csvfiles/libraries.csv')
 accounts_csv = os.path.join(here, 'csvfiles/accounts.csv')
 
-db = Database(books_csv, magazine_csv, libraries_csv, accounts_csv)
+db = Database(books_csv, magazine_csv, accounts_csv)
 print(db)
 
 class LibraryGUI:
@@ -431,9 +429,11 @@ class LibraryGUI:
             ttk.Button(self.my_account_frame,text="Sign In",command=self.logout).pack(pady=20)
 
     def check_out_item(self,item_type):
+        
         if not self.current_user:
             # Show error message that user isn't logged in
             print("Guests can't checkout books")
+            messagebox.showerror("Error", "ERROR: Guests can't checkout books")
             return
         
         if item_type=="book": # Check if item is book
@@ -442,7 +442,7 @@ class LibraryGUI:
 
             if not search_selection and not normal_selection:
                 # Show error message telling user to make a magazine selection
-                print("ERROR: Select a book")
+                messagebox.showerror("Error", "ERROR: Select a book")
                 return
 
             data = None
@@ -459,23 +459,25 @@ class LibraryGUI:
 
             if not isbn:
                 # Show error message telling user to make a book selection
-                print(f"ERROR: ISBN not found")
+                messagebox.showerror("Error", "ERROR: ISBN not found")
                 return
             
             book_to_checkout = db.check_out_book(isbn, self.current_user, library)
             
             if not book_to_checkout:
-                print(f"ERROR: Book couldn't be found")
                 # Show error saying book isn't found
+                messagebox.showerror("Error", "ERROR: Book couldn't be found")
                 return
-                
+            else:
+                messagebox.showinfo("Info", f"Book: {book_to_checkout.get_ISBN()} has been checked out")
+
         elif item_type=="magazine": # Item must be a magazine
             search_selection = self.magazine_search_tree.selection()
             normal_selection = self.magazine_tree.selection()
             
             if not search_selection and not normal_selection:
                 # Show error message telling user to make a magazine selection
-                print("ERROR: Select a magazine")
+                messagebox.showerror("Error", "ERROR: Select a magazine")
                 return
 
             data = ""
@@ -490,15 +492,17 @@ class LibraryGUI:
             print(f"MAGAZINE CHECKED OUT: {issn}")
             if not issn:
                 # Show error message telling user to make a book selection
-                print(f"ERROR: ISSN not found")
+                messagebox.showerror("Error", "ERROR: ISSN not found")
                 return
 
             magazine_to_checkout = db.check_out_magazine(issn, self.current_user,library)
 
             if not magazine_to_checkout:
                 # Show error saying magazine isn't found
-                print("ERROR: Magazine is not found")
+                messagebox.showerror("Error", "ERROR: Magazine is not found")
                 return
+            else:
+                messagebox.showinfo("Info", f"Magazine: {magazine_to_checkout.get_ISSN()} has been checked out")
 
         
         self.refresh_my_checked_out_books()
@@ -524,7 +528,9 @@ class LibraryGUI:
         
         if item_to_return:
             # Update UI
+            messagebox.showinfo("Info", f"{item_type}: {title} has been checked in")
             self.refresh_my_checked_out_books()
+
             # Show success message
         else:
             # Show error message telling the user the book isn't checked out by them
@@ -637,7 +643,7 @@ class LibraryGUI:
                 self.accounts_list.insert(tk.END, account_info) # Return each account one by one
 
 def save_to_database():
-    db.save()
+    db.save_data()
     root.destroy()
 
 root=tk.Tk()
