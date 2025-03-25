@@ -150,7 +150,7 @@ class Database:
 
     def save_data(self):
         books_file = self.books_file
-        magazine_file = self.magazine_file
+        magazine_file = self.magazines_file
         accounts_file = self.accounts_file
 
 
@@ -275,10 +275,11 @@ class Database:
     def create_book(self, title, author, publisher, library_location):
         print(f"{author = }, {publisher = }")
         highest = 0
-        for book in self.books:
-            current_ISBN = book._ISBN.split("-")
-            if int(current_ISBN[2]) > highest:
-                highest = int(current_ISBN[2])
+        for library in self.libraries:
+            for book in library.books:
+                current_ISBN = book._ISBN.split("-")
+                if int(current_ISBN[2]) > highest:
+                    highest = int(current_ISBN[2])
         ISBN = f"0000-0000-{highest+1:04}"
 
         new_book = Book(title, publisher, author, ISBN)
@@ -286,29 +287,28 @@ class Database:
         for library in self.libraries: # Find the library and add the book to it
             if library.location == library_location:
                 library.books.append(new_book)
+                print(f'NEW Book: \n{new_book}')
                 break
 
-        self.books.append(new_book)
-        print(f"NEW BOOK: \n{self.books[-1]} ") # or you can make this return something if you want to display it in the UI 
     
-    def create_magazine(self, title, publisher, issue_num, library_locationch):
+    def create_magazine(self, title, publisher, issue_num, library_location):
         highest = 0
-        for magazine in self.magazines:
-            current_ISSN = magazine._ISSN.split("-")
-            if int(current_ISSN[1]) > highest:
-                highest = int(current_ISSN[1])
-        ISSN = f"0000-0000-{highest+1:04}"
+        for library in self.libraries:
+            for magazine in library.magazines:
+                current_ISSN = magazine._ISSN.split("-")
+                if int(current_ISSN[1]) > highest:
+                    highest = int(current_ISSN[1])
+        ISSN = f"0000-{highest+1:04}"
 
         new_magazine = Magazine(title, publisher, issue_num, ISSN)
 
         for library in self.libraries: # Find the library and add the magazine to it
             if library.location == library_location:
                 library.magazines.append(new_magazine)
-                print(library)
+                print(f'NEW MAGAZINE: \n{new_magazine}')
                 break
-                
-        self.magazines.append(new_magazine)
-        print(f'NEW MAGAZINE: \n{self.magazines[-1:]}') # same for here: line 169
+
+        
 
     def check_out_book(self, ISBN, account, library):
         book = next((book for book in library.books if book == ISBN), None) # finds book or give a default value of none

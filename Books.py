@@ -30,7 +30,7 @@ class _LibraryItem:
         return attrs
 
 class Book(_LibraryItem):
-    def __init__(self, title, publisher, author, _ISBN, _checked_in = True, _check_in_date=None ):
+    def __init__(self, title='Unknown', publisher="Unknown", author="Unknown", _ISBN="Not Found", _checked_in = True, _check_in_date=None ):
         super().__init__(title, publisher, _checked_in, _check_in_date)
         self.author = author
         self._ISBN = _ISBN
@@ -47,7 +47,7 @@ class Book(_LibraryItem):
         return self._ISBN == isbn
 
 class Magazine(_LibraryItem):
-    def __init__(self, title, publisher, issue_num=0, _ISSN=0, _checked_in = True, _check_in_date=None):
+    def __init__(self, title='Unknown', publisher='Unknown', issue_num=0, _ISSN="Not Found", _checked_in = True, _check_in_date=None):
         super().__init__(title, publisher, _checked_in, _check_in_date)
         self.issue_num = f"{issue_num:03}"
         self._ISSN = _ISSN
