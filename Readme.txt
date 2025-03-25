@@ -23,7 +23,7 @@ Installation
   1. Clone the repository:
   git clone https://github.com/Alak-Hul/Library-Management-System.git
   2. Navigate to the directory:
-  cd Library-Management-System
+  cd [path to directory]/Library-Management-System
   3. Run the Application:
   python Main.py
 
