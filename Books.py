@@ -1,8 +1,8 @@
-from abc import abstractmethod
+from abc import ABC,abstractmethod
 from datetime import datetime, timedelta
 
 
-class _LibraryItem:
+class _LibraryItem(ABC):
     def __init__(self, title, publisher, _checked_in, _check_in_date=None):
         self.title = title
         self.publisher = publisher
