@@ -96,20 +96,21 @@ class LibraryGUI:
             print("error")
     
     def toggle_admin_tab(self):
-        admin_tab_exists=False
-        for i in range(self.notebook.index("end")):
-            if self.notebook.tab(i,"text")==("Admin Panel"): # This is to check if the admin page already exists
-                admin_tab_exists=True
-                break
-        
-        is_admin=(self.current_user.get_ID()==str(self.admin_id)) # Check if current user is admin - True if yes, False if not
-        if is_admin and not admin_tab_exists:
-            self.notebook.add(self.admin_frame,text="Admin Panel") # Adds admin page if the user is an admin
-        elif not is_admin and admin_tab_exists:
-            for i in range(self.notebook.index("end")): # Removes admin page if the user is not admin and the admin tab already created
-                if self.notebook.tab(i,"text")=="Admin Panel":
-                    self.notebook.forget(i)
+        if self.current_user:
+            admin_tab_exists=False
+            for i in range(self.notebook.index("end")):
+                if self.notebook.tab(i,"text")==("Admin Panel"): # This is to check if the admin page already exists
+                    admin_tab_exists=True
                     break
+            
+            is_admin=(self.current_user.get_ID()==str(self.admin_id)) # Check if current user is admin - True if yes, False
+            if is_admin and not admin_tab_exists:
+                self.notebook.add(self.admin_frame,text="Admin Panel") # Adds admin page if the user is an admin
+            elif not is_admin and admin_tab_exists:
+                for i in range(self.notebook.index("end")): # Removes admin page if the user is not admin and the admin tab already created
+                    if self.notebook.tab(i,"text")=="Admin Panel":
+                        self.notebook.forget(i)
+                        break
 
     def account_back(self): #honestly I hate this, but it works so who cares
         self.account_creation_frame.pack_forget()
@@ -122,8 +123,10 @@ class LibraryGUI:
             self.account_creation_frame.pack_forget()
             self.account_creation_frame.destroy()
             self.account_creation_frame=ttk.Frame(root) 
-            db.create_account(name, id)
-            self.login(id)
+            if not db.create_account(name, id):
+                messagebox.showerror("Error", "Error: An account as already been made with that ID")
+            else:
+                self.login(id)
         else: 
             ttk.Label(self.account_creation_frame, text="Invaild Name, or ID",font=("Arial", 16)).pack(pady=20)
 
@@ -294,7 +297,7 @@ class LibraryGUI:
         for library in db.libraries: # Refreshes the book tree
             for book in library.books:
                 if hasattr(book, "_ISBN"): # This is to check if the item is a book
-                    self.book_tree.insert("", "end", values=(book.get_ISBN(), book.title, book.author, book.publisher, library.location))
+                    self.book_tree.insert("", "end", values=(book.get_ISBN(),book.title,book.author,book.publisher,"Checked In" if book.is_status() else "Checked Out",library.location))
 
     def refresh_magazine_tree(self):
         for item in self.magazine_tree.get_children(): # Clear old list
@@ -302,7 +305,7 @@ class LibraryGUI:
         
         for library in db.libraries: # Refreshes the book tree
             for magazine in library.magazines:
-                    self.magazine_tree.insert("", "end", values=(magazine.title, magazine.publisher, magazine.issue_num, library.location))
+                    self.magazine_tree.insert("", "end", values=(magazine.get_ISSN(), magazine.title, magazine.publisher, magazine.issue_num, "Checked In" if magazine.is_status() else "Checked Out", library.location))
  
     def items_section(self):
         # Items tab creation
@@ -317,17 +320,18 @@ class LibraryGUI:
         self.item_notebook.add(self.magazine_frame,text="Magazines")
         
         # Books
-        self.book_tree=ttk.Treeview(self.book_frame,columns=("ISBN","Title","Author","Publisher","Library"),show="headings")
+        self.book_tree=ttk.Treeview(self.book_frame,columns=("ISBN","Title","Author","Publisher","Status","Library"),show="headings")
         self.book_tree.heading("ISBN",text="ISBN")
         self.book_tree.heading("Title",text="Title")
         self.book_tree.heading("Author",text="Author")
         self.book_tree.heading("Publisher",text="Publisher")
+        self.book_tree.heading("Status", text="Status")
         self.book_tree.heading("Library",text="Library")
         self.book_tree.pack(fill="both",expand=True)
         
         for library in db.libraries:
             for book in library.books:
-                self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.publisher,library.location)) # Returns available Books
+                self.book_tree.insert("","end",values=(book.get_ISBN(),book.title,book.author,book.publisher,"Checked In" if book.is_status() else "Checked Out",library.location)) # Returns available Books
 
             # Search for Books
         search_frame_books=ttk.Frame(self.book_frame)
@@ -466,7 +470,7 @@ class LibraryGUI:
             
             if not book_to_checkout:
                 # Show error saying book isn't found
-                messagebox.showerror("Error", "ERROR: Book couldn't be found")
+                messagebox.showerror("Error", "ERROR: Book was not checked out")
                 return
             else:
                 messagebox.showinfo("Info", f"Book: {book_to_checkout.get_ISBN()} has been checked out")
@@ -499,7 +503,7 @@ class LibraryGUI:
 
             if not magazine_to_checkout:
                 # Show error saying magazine isn't found
-                messagebox.showerror("Error", "ERROR: Magazine is not found")
+                messagebox.showerror("Error", "ERROR: Magazine was not checked out")
                 return
             else:
                 messagebox.showinfo("Info", f"Magazine: {magazine_to_checkout.get_ISSN()} has been checked out")
@@ -607,7 +611,7 @@ class LibraryGUI:
             "Title": "title",
             "Publisher": "publisher",
             "ISSN": "_ISSN",
-            "Issue Number": "issue num",
+            "Issue Number": "issue_num",
             "Library": "library"
         } # This just allows for the options in the drop down to be different to the ones that get sent to book_search that way they can be capitalized and stuff
 

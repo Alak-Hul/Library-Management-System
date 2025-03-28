@@ -102,9 +102,7 @@ class Database:
                     self.accounts.append(Account(**account_in_csv))
         except FileNotFoundError:
             print("ERROR: INVALID ACCOUNT FILE NAME")
-        
-
-        
+             
     '''    
     # This caused for problem then it was worth
     def save_data(self):
@@ -265,12 +263,14 @@ class Database:
         return list # Returns a list of books that match the search criteria.
 
     def create_account(self, name, id):
+        if id in self.accounts:
+            return False
         name = name.split(" ")
         if len(name) < 2:
             name.append("None")
-        self.accounts.append(Account(name[0], name[1], id, [], []))
-        print(self.accounts[-1])
-        self.save()
+        new_account = Account(name[0], name[1], id)
+        self.accounts.append(new_account)
+        return self.accounts[-1]
     
     def create_book(self, title, author, publisher, library_location):
         print(f"{author = }, {publisher = }")
@@ -290,7 +290,6 @@ class Database:
                 print(f'NEW Book: \n{new_book}')
                 break
 
-    
     def create_magazine(self, title, publisher, issue_num, library_location):
         highest = 0
         for library in self.libraries:
@@ -308,10 +307,8 @@ class Database:
                 print(f'NEW MAGAZINE: \n{new_magazine}')
                 break
 
-        
-
     def check_out_book(self, ISBN, account, library):
-        book = next((book for book in library.books if book == ISBN), None) # finds book or give a default value of none
+        book = next((book for book in library.books if book == ISBN), None) # finds book or gives a default value of none
 
         if book and book not in account.books and book.is_status():
             book.check_out()
@@ -345,7 +342,6 @@ class Database:
             return magazine
         return None
         
-
     def __str__(self):
         str = "BOOKS:\n"
         str += "LIBRARIES: \n"
